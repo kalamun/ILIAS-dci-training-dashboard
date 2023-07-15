@@ -29,12 +29,25 @@
 
 .kalamun-training-dashboard .kalamun-training-dashboard_body {
     display: flex;
-    flex-direction: row;
-    padding: 1.5em;
-    justify-content: space-between;
+    flex-direction: column;
     flex-basis: 100%;
     word-wrap: break-word;
     line-height: 1.2;
+    border: 1px solid var(--color-xlight-grey);
+}
+.kalamun-training-dashboard .kalamun-training-dashboard_title h2 {
+    margin: 0 !important;
+    text-transform: uppercase;
+    font-size: var(--font-size-small) !important;
+    color: var(--color-blue);
+    border-bottom: 1px solid var(--color-xlight-grey);
+    padding: 1.5em;
+}
+.kalamun-training-dashboard .kalamun-training-dashboard_courses {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 1.5em;
 }
 
 @container kalamun-training-dashboard (max-width: 500px) {
