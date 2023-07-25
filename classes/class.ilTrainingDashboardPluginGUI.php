@@ -217,6 +217,11 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $owner[] = "cc.obj_id = " . $course['obj_id'];
         }
 
+        // prevent SQL syntax errors when user has no courses
+        if (count($owner) == 0) {
+            $owner[] = "cc.obj_id = 0";
+        }
+
         $query = "SELECT *, ce.title as event_title FROM cal_entries ce" .
             " JOIN cal_cat_assignments cca ON ce.cal_id = cca.cal_id" .
             " JOIN cal_categories cc ON cca.cat_id = cc.cat_id" .
@@ -229,7 +234,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         }
 
         ob_start();
-
+        
         ?>
         <div class="kalamun-training-dashboard">
             <div class="kalamun-training-dashboard_body">
