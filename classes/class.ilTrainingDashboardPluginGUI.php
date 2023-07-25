@@ -24,7 +24,7 @@
  */
 class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 {
-    /* ilLanguage */protected $lng;
+    protected /* ilLanguage */ $lng;
     protected ilCtrl $ctrl;
     protected ilGlobalTemplateInterface $tpl;
     protected ilTree $tree;
@@ -43,6 +43,8 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $this->tree = $DIC->repositoryTree();
         $this->object = $DIC->object();
         $this->user = $DIC['ilUser'];
+
+        //require_once('./Services/Calendar/classes/class.ilDateTime.php');
     }
 
     /**
@@ -201,9 +203,30 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
     {
         global $DIC;
         $ctrl = $DIC->ctrl();
+        $db = $DIC->database();
         
         $title = !empty($a_properties['title']) ? $a_properties['title'] : "";
         $description = !empty($a_properties['description']) ? $a_properties['description'] : "";
+
+        /* courses */
+        $courses = static::getCoursesOfUser($this->user->getId(), true);
+
+        /* calendar */
+        $owner = [];
+        foreach($courses as $course) {
+            $owner[] = "cc.obj_id = " . $course['obj_id'];
+        }
+
+        $query = "SELECT *, ce.title as event_title FROM cal_entries ce" .
+            " JOIN cal_cat_assignments cca ON ce.cal_id = cca.cal_id" .
+            " JOIN cal_categories cc ON cca.cat_id = cc.cat_id" .
+            " WHERE cc.type = 2 AND (" . implode(" OR ", $owner) . ") ORDER BY ce.starta ASC LIMIT 10";
+
+        $res = $db->query($query);
+        $calendar_entries = [];
+        while ($entry = $res->fetch(ilDBConstants::FETCHMODE_OBJECT)) {
+            $calendar_entries[] = $entry;
+        }
 
         ob_start();
 
@@ -211,7 +234,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         <div class="kalamun-training-dashboard">
             <div class="kalamun-training-dashboard_body">
                 <div class="kalamun-training-dashboard_title">
-                    <h2><?=$title;?></h2>
+                    <h2><span class="icon-pin"></span> <?=$title;?></h2>
                     <?php
                     if (!empty($description)) {?>
                         <div class="kalamun-training-dashboard_description"><?=$description;?></div>
@@ -220,9 +243,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                 </div>
                 <div class="kalamun-training-dashboard_courses">
                     <?php
-
-                    $courses = static::getCoursesOfUser($this->user->getId(), true);
-
                     foreach ($courses as $course) {
                         $ref_id = $course['ref_id'];
                         $obj = ilObjectFactory::getInstanceByRefId($ref_id);
@@ -260,15 +280,63 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             }
 
                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
+                            echo '<span class="icon-clock"></span> ';
                             if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
                             if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
                             if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
                             ?>
-                            <a href="<?= $permalink; ?>"><button>Start</button></a>
+                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 0 ? 'Continue…' : 'Start'; ?></button></a>
                         </div>
                         <?php
                     }
                     ?>
+                    </div>
+                </div>
+                
+                <div class="kalamun-training-dashboard_calendar">
+                    <div class="kalamun-training-dashboard_title">
+                        <h2><span class="icon-calendar"></span> Calendar</h2>
+                    </div>
+                    <div class="kalamun-training-dashboard_entries">
+                        <?php
+                        foreach($calendar_entries as $entry) {
+                            ?>
+                            <div class="kalamun-training-dashboard_entry">
+                                <div class="kalamun-training-dashboard_calendar_date">
+                                    <?php
+                                    $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
+                                    $date_parts = $date->get(IL_CAL_FKT_GETDATE);
+
+                                    echo $date_parts['weekday'] . ' '
+                                        . $date_parts['mday'] . ' '
+                                        . $date_parts['month'] . ' '
+                                        . $date_parts['year'] . ' ';
+                                        
+                                    if (!empty($date_parts['hours'])) {
+                                        echo  '<div class="time">'
+                                            . $date_parts['hours'] . ':'
+                                            . $date_parts['minutes']
+                                            . '</div>';
+                                    }
+                                    ?>
+                                </div>
+                                <div class="kalamun-training-dashboard_calendar_title">
+                                    <h3><?= $entry->event_title; ?></h3>
+                                    <?php
+                                    if (!empty($entry->description)) {?>
+                                        <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
+                                    <?php }
+                                    ?>
+                                    <?php
+                                    if (!empty($entry->location)) {?>
+                                        <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
+                                    <?php }
+                                    ?>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                        ?>
                     </div>
                 </div>
             </div>
