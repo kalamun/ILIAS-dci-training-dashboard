@@ -220,7 +220,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $query = "SELECT *, ce.title as event_title FROM cal_entries ce" .
             " JOIN cal_cat_assignments cca ON ce.cal_id = cca.cal_id" .
             " JOIN cal_categories cc ON cca.cat_id = cc.cat_id" .
-            " WHERE cc.type = 2 AND (" . implode(" OR ", $owner) . ") ORDER BY ce.starta ASC LIMIT 10";
+            " WHERE cc.type = 2 AND (" . implode(" OR ", $owner) . ") AND ce.starta >= NOW() ORDER BY ce.starta ASC LIMIT 3";
 
         $res = $db->query($query);
         $calendar_entries = [];
@@ -292,53 +292,58 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     ?>
                     </div>
                 </div>
-                
-                <div class="kalamun-training-dashboard_calendar">
-                    <div class="kalamun-training-dashboard_title">
-                        <h2><span class="icon-calendar"></span> Calendar</h2>
-                    </div>
-                    <div class="kalamun-training-dashboard_entries">
-                        <?php
-                        foreach($calendar_entries as $entry) {
-                            ?>
-                            <div class="kalamun-training-dashboard_entry">
-                                <div class="kalamun-training-dashboard_calendar_date">
-                                    <?php
-                                    $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
-                                    $date_parts = $date->get(IL_CAL_FKT_GETDATE);
-
-                                    echo $date_parts['weekday'] . ' '
-                                        . $date_parts['mday'] . ' '
-                                        . $date_parts['month'] . ' '
-                                        . $date_parts['year'] . ' ';
-                                        
-                                    if (!empty($date_parts['hours'])) {
-                                        echo  '<div class="time">'
-                                            . $date_parts['hours'] . ':'
-                                            . $date_parts['minutes']
-                                            . '</div>';
-                                    }
-                                    ?>
-                                </div>
-                                <div class="kalamun-training-dashboard_calendar_title">
-                                    <h3><?= $entry->event_title; ?></h3>
-                                    <?php
-                                    if (!empty($entry->description)) {?>
-                                        <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
-                                    <?php }
-                                    ?>
-                                    <?php
-                                    if (!empty($entry->location)) {?>
-                                        <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
-                                    <?php }
-                                    ?>
-                                </div>
-                            </div>
-                            <?php
-                        }
+                <?php
+                    if (count($calendar_entries) > 0) {
                         ?>
-                    </div>
-                </div>
+                        <div class="kalamun-training-dashboard_calendar">
+                            <div class="kalamun-training-dashboard_title">
+                                <h2><span class="icon-calendar"></span> Calendar</h2>
+                            </div>
+                            <div class="kalamun-training-dashboard_entries">
+                                <?php
+                                foreach($calendar_entries as $entry) {
+                                    ?>
+                                    <div class="kalamun-training-dashboard_entry">
+                                        <div class="kalamun-training-dashboard_calendar_date">
+                                            <?php
+                                            $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
+                                            $date_parts = $date->get(IL_CAL_FKT_GETDATE);
+
+                                            echo $date_parts['weekday'] . ' '
+                                                . $date_parts['mday'] . ' '
+                                                . $date_parts['month'] . ' '
+                                                . $date_parts['year'] . ' ';
+                                                
+                                            if (!empty($date_parts['hours'])) {
+                                                echo  '<div class="time">'
+                                                    . $date_parts['hours'] . ':'
+                                                    . $date_parts['minutes']
+                                                    . '</div>';
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="kalamun-training-dashboard_calendar_title">
+                                            <h3><?= $entry->event_title; ?></h3>
+                                            <?php
+                                            if (!empty($entry->description)) {?>
+                                                <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
+                                            <?php }
+                                            ?>
+                                            <?php
+                                            if (!empty($entry->location)) {?>
+                                                <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
+                                            <?php }
+                                            ?>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                ?>
             </div>
         </div>
         <?php
