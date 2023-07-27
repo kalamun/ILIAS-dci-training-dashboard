@@ -239,10 +239,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         <div class="kalamun-training-dashboard">
             <div class="kalamun-training-dashboard_body">
                 <div class="kalamun-training-dashboard_title">
-                    <h2><span class="icon-pin"></span> <?=$title;?></h2>
+                    <h2><span class="icon-pin"></span> <?= $title; ?></h2>
                     <?php
                     if (!empty($description)) {?>
-                        <div class="kalamun-training-dashboard_description"><?=$description;?></div>
+                        <div class="kalamun-training-dashboard_description"><?= $description; ?></div>
                     <?php }
                     ?>
                 </div>
@@ -255,7 +255,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             continue;
                         }
                         $obj_id = $obj->getId();
-
+                        
                         $type = $obj->getType();
                         $title = $obj->getTitle();
                         $description = $obj->getDescription();
@@ -278,10 +278,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
                         ?>
                         <div class="kalamun-training-dashboard_course">
-                            <h3><?=$title;?></h3>
+                            <h3><?= $title; ?></h3>
                             <?php
                             if (!empty($description)) {
-                                ?><p><?=$description;?></p><?php
+                                ?><p><?= $description; ?></p><?php
                             }
 
                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
@@ -290,7 +290,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
                             if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
                             ?>
-                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 0 ? 'Continue…' : 'Start'; ?></button></a>
+                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue…' : 'Start'; ?></button></a>
                         </div>
                         <?php
                     }
@@ -307,39 +307,55 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             <div class="kalamun-training-dashboard_entries">
                                 <?php
                                 foreach($calendar_entries as $entry) {
+                                    if (!empty($entry->obj_id)) {
+                                        $query = "SELECT * FROM object_reference WHERE obj_id = " . intval($entry->obj_id) . " LIMIT 1";
+                                        $res = $db->query($query);
+                                        $ref = $res->fetch(ilDBConstants::FETCHMODE_OBJECT);
+                                        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref->ref_id);
+                                        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
+                                    }
                                     ?>
                                     <div class="kalamun-training-dashboard_entry">
-                                        <div class="kalamun-training-dashboard_calendar_date">
-                                            <?php
-                                            $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
-                                            $date_parts = $date->get(IL_CAL_FKT_GETDATE);
+                                        <a href="<?= $permalink; ?>">
+                                            <div class="kalamun-training-dashboard_calendar_date">
+                                                <?php
+                                                $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
+                                                $date_parts = $date->get(IL_CAL_FKT_GETDATE);
 
-                                            echo $date_parts['weekday'] . ' '
-                                                . $date_parts['mday'] . ' '
-                                                . $date_parts['month'] . ' '
-                                                . $date_parts['year'] . ' ';
-                                                
-                                            if (!empty($date_parts['hours'])) {
-                                                echo  '<div class="time">'
-                                                    . $date_parts['hours'] . ':'
-                                                    . $date_parts['minutes']
-                                                    . '</div>';
-                                            }
-                                            ?>
-                                        </div>
-                                        <div class="kalamun-training-dashboard_calendar_title">
-                                            <h3><?= $entry->event_title; ?></h3>
-                                            <?php
-                                            if (!empty($entry->description)) {?>
-                                                <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
-                                            <?php }
-                                            ?>
-                                            <?php
-                                            if (!empty($entry->location)) {?>
-                                                <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
-                                            <?php }
-                                            ?>
-                                        </div>
+                                                echo $date_parts['weekday'] . ' '
+                                                    . $date_parts['mday'] . ' '
+                                                    . $date_parts['month'] . ' '
+                                                    . $date_parts['year'] . ' ';
+                                                    
+                                                if (!empty($date_parts['hours'])) {
+                                                    echo  '<div class="time">'
+                                                        . $date_parts['hours'] . ':'
+                                                        . $date_parts['minutes']
+                                                        . '</div>';
+                                                }
+                                                ?>
+                                            </div>
+                                            <div class="kalamun-training-dashboard_calendar_title">
+                                                <h3><?= $entry->event_title; ?></h3>
+                                                <?php
+                                                if (!empty($entry->description)) {?>
+                                                    <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
+                                                <?php }
+                                                ?>
+                                                <div class="kalamun-training-dashboard_calendar_meta">
+                                                    <?php
+                                                    if (!empty($entry->title)) {?>
+                                                        <div class="kalamun-training-dashboard_calendar_title"><span class="icon-attachment"></span> <?=$entry->title;?></div>
+                                                    <?php }
+                                                    ?>
+                                                    <?php
+                                                    if (!empty($entry->location)) {?>
+                                                        <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
+                                                    <?php }
+                                                    ?>
+                                                </div>
+                                            </div>
+                                        </a>
                                     </div>
                                     <?php
                                 }
