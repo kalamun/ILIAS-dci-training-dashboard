@@ -259,6 +259,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                         $type = $obj->getType();
                         $title = $obj->getTitle();
                         $description = $obj->getDescription();
+                        $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
                         $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
                         $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
 
@@ -278,19 +279,33 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
                         ?>
                         <div class="kalamun-training-dashboard_course">
-                            <h3><?= $title; ?></h3>
-                            <?php
-                            if (!empty($description)) {
-                                ?><p><?= $description; ?></p><?php
-                            }
-
-                            $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                            echo '<span class="icon-clock"></span> ';
-                            if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                            if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
-                            if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
-                            ?>
-                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue…' : 'Start'; ?></button></a>
+                            <div class="kalamun-training-dashboard_thumb">
+                                <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : ''); ?>
+                            </div>
+                            <div class="kalamun-training-dashboard_course_body">
+                                <div class="kalamun-training-dashboard_heading">
+                                    <h3><?= $title; ?></h3>
+                                    <?php
+                                    if (!empty($description)) {
+                                        ?><p><?= $description; ?></p><?php
+                                    }
+                                    ?>
+                                </div>
+                                <div class="kalamun-training-dashboard_course_meta">
+                                    <div class="kalamun-training-dashboard_course_time">
+                                    <?php
+                                    $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
+                                    echo '<span class="icon-clock"></span> ';
+                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
+                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                    if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
+                                    ?>
+                                    </div>
+                                    <div class="kalamun-training-dashboard_course_cta">
+                                        <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue…' : 'Start'; ?></button></a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <?php
                     }
