@@ -30,6 +30,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
     protected ilTree $tree;
     protected ilObjectService $object;
     protected ilObjUser $user;
+    protected dciCourse $dciCourse;
 
     public function __construct()
     {
@@ -43,6 +44,8 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $this->tree = $DIC->repositoryTree();
         $this->object = $DIC->object();
         $this->user = $DIC['ilUser'];
+
+        $this->dciCourse = new dciCourse();
 
         //require_once('./Services/Calendar/classes/class.ilDateTime.php');
     }
@@ -209,8 +212,12 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $description = !empty($a_properties['description']) ? $a_properties['description'] : "";
 
         /* courses */
-        $courses = static::getCoursesOfUser($this->user->getId(), true);
-
+        $courses = static::getCoursesOfUser($this->user->getId());
+/*         echo '<pre>';
+        print_r($courses);
+        echo '</pre>';
+        die();
+ */
         /* calendar */
         $owner = [];
         foreach($courses as $course) {
@@ -256,12 +263,31 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                         }
                         $obj_id = $obj->getId();
                         
+                        $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
+                        $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
+
                         $type = $obj->getType();
                         $title = $obj->getTitle();
                         $description = $obj->getDescription();
                         $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
                         $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
                         $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
+
+                        $course_tabs = dciSkin_tabs::getCourseTabs($ref_id);
+                        $mandatory_cards_count = 0;
+                        $completed_cards_count = 0;
+                        
+                        foreach ($course_tabs as $page) {
+                            $mandatory_cards_count += $page['cards_mandatory'];
+                            $completed_cards_count += $page['cards_completed'];
+                        }
+
+                        foreach ($course_tabs as $page) {
+                            if (!$page['completed']) {
+                                $permalink = $page['permalink'];
+                                break;
+                            }
+                        }
 
                         /* progress statuses:
                         0 = attempt
@@ -270,17 +296,17 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                         3 = failed;
                         */
                         $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
-                        $lp_status = ilLPStatus::_lookupStatus($obj_id, $this->user->getId());
-                        $lp_percent = ilLPStatus::_lookupPercentage($obj_id, $this->user->getId());
-                        $lp_in_progress = !empty(ilLPStatus::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
-                        $lp_completed = ilLPStatus::_hasUserCompleted($obj_id, $this->user->getId());
-                        $lp_failed = !empty(ilLPStatus::_lookupFailedForObject($obj_id, [$this->user->getId()]));
+                        $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
+                        $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
+                        $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
+                        $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
+                        $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
                         $lp_downloaded = $lp['visits'] > 0 && $type == "file";
 
                         ?>
-                        <div class="kalamun-training-dashboard_course">
+                        <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
                             <div class="kalamun-training-dashboard_thumb">
-                                <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : ''); ?>
+                                <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : '<span class="empty-thumb"></span>'); ?>
                             </div>
                             <div class="kalamun-training-dashboard_course_body">
                                 <div class="kalamun-training-dashboard_heading">
@@ -292,17 +318,28 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                     ?>
                                 </div>
                                 <div class="kalamun-training-dashboard_course_meta">
-                                    <div class="kalamun-training-dashboard_course_time">
-                                    <?php
-                                    $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                                    echo '<span class="icon-clock"></span> ';
-                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
-                                    if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
-                                    ?>
+                                    <div class="kalamun-training-dashboard_course_progress">
+                                        <?php
+                                        if ($mandatory_cards_count > 0) {
+                                            ?>
+                                            <span class="progress">
+                                                <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                            </span>
+                                            <?php
+                                        }
+                                        ?>
+                                        <div class="kalamun-training-dashboard_course_time">
+                                            <?php
+                                            $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
+                                            echo '<span class="icon-clock"></span> ';
+                                            if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
+                                            if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                            if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
+                                            ?>
+                                        </div>
                                     </div>
                                     <div class="kalamun-training-dashboard_course_cta">
-                                        <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue…' : 'Start'; ?></button></a>
+                                        <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
                                     </div>
                                 </div>
                             </div>
@@ -389,8 +426,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
 
     public static function getCoursesOfUser(
-        int $a_user_id,
-        bool $a_add_path = false
+        int $a_user_id
     ): array {
         global $DIC;
         $tree = $DIC->repositoryTree();
@@ -399,13 +435,8 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
         $items = ilParticipants::_getMembershipByType($a_user_id, ['crs']);
 
-        $repo_title = $tree->getNodeData(ROOT_FOLDER_ID);
-        $repo_title = $repo_title["title"];
-        if ($repo_title == "ILIAS") {
-            $repo_title = "Repository"; //$this->lng->txt("repository");
-        }
-
-        $references = $lp_obj_refs = array();
+        $references = [];
+        $lp_obj_refs = [];
         foreach ($items as $obj_id) {
             $ref_id = ilObject::_getAllReferences($obj_id);
             if (is_array($ref_id) && count($ref_id)) {
@@ -414,44 +445,22 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     $visible = false;
                     $active = ilObjCourseAccess::_isActivated($obj_id, $visible, false);
                     if ($active && $visible) {
-                        $references[$ref_id] = array(
+                        $references[$ref_id] = [
                             'ref_id' => $ref_id,
                             'obj_id' => $obj_id,
-                            'title' => ilObject::_lookupTitle($obj_id)
-                        );
-
-                        if ($a_add_path) {
-                            $path = array();
-                            foreach ($tree->getPathFull($ref_id) as $item) {
-                                $path[] = $item["title"];
-                            }
-                            // top level comes first
-                            if (count($path) === 2) {
-                                $path[0] = 0;
-                            } else {
-                                $path[0] = 1;
-                            }
-                            $references[$ref_id]["path_sort"] = implode("__", $path);
-                            array_shift($path);
-                            array_pop($path);
-                            if (!count($path)) {
-                                array_unshift($path, $repo_title);
-                            }
-                            $references[$ref_id]["path"] = implode(" &rsaquo; ", $path);
-                        }
-
+                            'title' => ilObject::_lookupTitle($obj_id),
+                        ];
                         $lp_obj_refs[$obj_id] = $ref_id;
                     }
                 }
             }
         }
-
-        // get lp data for valid courses
-
+        
         if (count($lp_obj_refs)) {
             // listing the objectives should NOT depend on any LP status / setting
             foreach ($lp_obj_refs as $obj_id => $ref_id) {
                 // only if set in DB (default mode is not relevant
+//                var_dump($obj_id, ilObjCourse::_lookupViewMode($obj_id), ilCourseConstants::IL_CRS_VIEW_OBJECTIVE);
                 if (ilObjCourse::_lookupViewMode($obj_id) === ilCourseConstants::IL_CRS_VIEW_OBJECTIVE) {
                     $references[$ref_id]["objectives"] = static::parseObjectives($obj_id, $a_user_id);
                 }
