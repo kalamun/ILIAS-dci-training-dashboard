@@ -316,19 +316,23 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             <div class="kalamun-training-dashboard_course_body">
                                 <div class="kalamun-training-dashboard_heading">
                                     <h3><?= $title; ?></h3>
+                                    <div class="kalamun-training-dashboard_more"><span><span class="icon-add"></span> <?= $DIC->language()->txt("Learn more"); ?></span></div>
+                                </div>
+                                <div class="kalamun-training-dashboard_course_meta">
+                                    <p class="kalamun-training-dashboard_title"><?= $title; ?></p>
                                     <?php
                                     if (!empty($description)) {
                                         ?><p><?= $description; ?></p><?php
                                     }
                                     ?>
-                                </div>
-                                <div class="kalamun-training-dashboard_course_meta">
                                     <div class="kalamun-training-dashboard_course_progress">
                                         <?php
                                         if ($mandatory_cards_count > 0) {
                                             ?>
+                                            <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
                                             <span class="progress">
-                                                <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                                <h6><?= $DIC->language()->txt("completed"); ?></h6>
+                                                <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
                                             </span>
                                             <?php
                                         }
@@ -336,10 +340,12 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         <div class="kalamun-training-dashboard_course_time">
                                             <?php
                                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                                            echo '<span class="icon-clock"></span> ';
-                                            if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                                            if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
-                                            if ($time_spent[0] == 0 && $time_spent[1] == 0) echo ' Not started yet ';
+                                            if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
+                                            else {
+                                                echo '<h6><span class="icon-clock"></span> ' . $DIC->language()->txt("time_spent") . '</h6>';
+                                                if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
+                                                if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                            }
                                             ?>
                                         </div>
                                     </div>
