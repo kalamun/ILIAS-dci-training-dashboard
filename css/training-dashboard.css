@@ -10,7 +10,7 @@
     --color-black: #1d1d1d;
 
     --color-red: #d11b26;
-    --color-blue: #006cbe;
+    --color-blue: #006aa5;
 
     --box-shadow: 0 2px 10px 0 #0002;
 
@@ -209,6 +209,7 @@
 
 .kalamun-training-dashboard .kalamun-training-dashboard_sidebar {
     flex-basis: 50%;
+    padding-top: 2.6rem;
 }
 .kalamun-training-dashboard :is(.kalamun-training-dashboard_calendar_date, .kalamun-training-dashboard_inbox_date) {
     color: var(--color-blue);
