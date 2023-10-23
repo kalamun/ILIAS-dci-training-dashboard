@@ -249,9 +249,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         ob_start();
         ?>
         <div class="kalamun-training-dashboard">
+            <div class="kalamun-training-dashboard-scrolldown"><span class="icon-down"></span></div>
             <div class="kalamun-training-dashboard_body">
                 <div class="kalamun-training-dashboard_title">
-                    <h2><span class="icon-graduation-cap"></span> <?= $title; ?></h2>
+                    <h2><?= $title; ?></h2>
                     <?php
                     if (!empty($description)) {?>
                         <div class="kalamun-training-dashboard_description"><?= $description; ?></div>
@@ -313,10 +314,21 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                             <div class="kalamun-training-dashboard_thumb">
                                 <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : '<span class="empty-thumb"></span>'); ?>
                             </div>
+                            <?php
+                            if ($mandatory_cards_count > 0) {
+                                ?>
+                                <div class="kalamun-training-dashboard_progress-bar">
+                                    <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                    <span class="progress">
+                                        <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
+                                    </span>
+                                </div>
+                                <?php
+                            }
+                            ?>
                             <div class="kalamun-training-dashboard_course_body">
                                 <div class="kalamun-training-dashboard_heading">
                                     <h3><?= $title; ?></h3>
-                                    <div class="kalamun-training-dashboard_more"><span><span class="icon-add"></span> <?= $DIC->language()->txt("Learn more"); ?></span></div>
                                 </div>
                                 <div class="kalamun-training-dashboard_course_meta">
                                     <p class="kalamun-training-dashboard_title"><?= $title; ?></p>
@@ -326,17 +338,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                     }
                                     ?>
                                     <div class="kalamun-training-dashboard_course_progress">
-                                        <?php
-                                        if ($mandatory_cards_count > 0) {
-                                            ?>
-                                            <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
-                                            <span class="progress">
-                                                <h6><?= $DIC->language()->txt("completed"); ?></h6>
-                                                <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
-                                            </span>
-                                            <?php
-                                        }
-                                        ?>
                                         <div class="kalamun-training-dashboard_course_time">
                                             <?php
                                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
@@ -361,6 +362,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     </div>
                 </div>
                 <?php
+                /*
                 if (count($inbox) > 0 || count($calendar_entries) > 0) {
                     ?>
                     <div class="kalamun-training-dashboard_sidebar">
@@ -490,6 +492,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     </div>
                     <?php
                     }
+                */
                 ?>
             </div>
         </div>

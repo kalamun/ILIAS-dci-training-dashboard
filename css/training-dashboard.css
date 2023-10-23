@@ -11,6 +11,7 @@
 
     --color-red: #d11b26;
     --color-blue: #006aa5;
+    --color-dark-blue: #003b5d;
 
     --box-shadow: 0 2px 10px 0 #0002;
 
@@ -20,6 +21,13 @@
 
     display: flex;
     gap: 1.5em;
+
+    background: var(--color-dark-blue);
+    color: var(--color-white);
+    left: 50%;
+    translate: -50svw 0;
+    width: 100svw;
+    padding: 4rem calc(50svw - 50%);
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_entry > a,
 .kalamun-training-dashboard .kalamun-training-dashboard_entry > a:hover {
@@ -36,6 +44,20 @@
     z-index: 100;
 }
 
+.kalamun-training-dashboard .kalamun-training-dashboard-scrolldown {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    translate: -50% 0;
+    background: var(--color-white);
+    color: var(--color-blue);
+    clip-path: polygon(50% 100%, 100% 0, 0 0);
+    width: 2.6em;
+    text-align: center;
+    font-size: 2em;
+    height: 1.3em;
+}
+
 .kalamun-training-dashboard :where(.kalamun-training-dashboard_body, .kalamun-training-dashboard_sidebar) {
     display: flex;
     flex-direction: column;
@@ -49,10 +71,11 @@
 .kalamun-training-dashboard .kalamun-training-dashboard_title h2 {
     margin: 0 !important;
     text-transform: uppercase;
-    font-size: var(--font-size-small) !important;
-    color: var(--color-blue);
+    font-size: var(--font-size-xxlarge) !important;
+    color: var(--color-white);
     border-bottom: 1px solid var(--color-xlight-grey);
-    padding: 1em 1.5em 0.8em;
+    padding: 0 1em 0.8em;
+    text-align: center;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_body {
     border-color: transparent;
@@ -72,13 +95,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1em;
+    justify-content: center;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_course {
     border: 1px solid var(--color-xlight-grey);
-    flex-basis: calc(50% - 1em);
+    flex-basis: calc(33% - 1em);
     min-width: 20rem;
     max-width: 28rem;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_entry {
@@ -90,6 +114,21 @@
 .kalamun-training-dashboard_title {
     font-weight: bold;
     font-size: var(--font-size-large);
+}
+
+.kalamun-training-dashboard_progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-black);
+}
+.kalamun-training-dashboard_progress-bar .progress {
+    position: relative;
+    z-index: 20;
 }
 
 .kalamun-training-dashboard_course_progress {
