@@ -28,6 +28,7 @@
     translate: -50svw 0;
     width: 100svw;
     padding: 4rem calc(50svw - 50%);
+    margin-top: 50px;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_entry > a,
 .kalamun-training-dashboard .kalamun-training-dashboard_entry > a:hover {
