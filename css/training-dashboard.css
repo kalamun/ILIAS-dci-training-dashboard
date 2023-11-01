@@ -22,7 +22,7 @@
     display: flex;
     gap: 1.5em;
 
-    background: var(--color-dark-blue);
+    background: url('../assets/mytraining_bkg.png') center center no-repeat var(--color-dark-blue);
     color: var(--color-white);
     left: 50%;
     translate: -50svw 0;
@@ -130,6 +130,9 @@
 .kalamun-training-dashboard_progress-bar .progress {
     position: relative;
     z-index: 20;
+}
+.kalamun-training-dashboard_progress-bar .dci-meter-value {
+    display: none;
 }
 
 .kalamun-training-dashboard_course_progress {
