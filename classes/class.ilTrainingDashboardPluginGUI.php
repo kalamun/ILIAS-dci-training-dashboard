@@ -309,6 +309,8 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                         $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
                         $lp_downloaded = $lp['visits'] > 0 && $type == "file";
 
+                        $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+
                         ?>
                         <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
                             <div class="kalamun-training-dashboard_thumb">
@@ -338,17 +340,37 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                     }
                                     ?>
                                     <div class="kalamun-training-dashboard_course_progress">
-                                        <div class="kalamun-training-dashboard_course_time">
+                                        <div class="kalamun-training-dashboard_course_progress_line time">
                                             <?php
                                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
                                             if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
                                             else {
-                                                echo '<h6><span class="icon-clock"></span> ' . $DIC->language()->txt("time_spent") . '</h6>';
-                                                if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                                                if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                echo '<h6>Time spent' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                echo '<span><span class="icon-clock"></span></span>';
+                                                echo '<div>';
+                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
+                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                echo '</div>';
                                             }
                                             ?>
                                         </div>
+                                        <?php
+                                        if (!empty($typical_learning_time)) {
+                                            ?>
+                                            <div class="kalamun-training-dashboard_course_progress_line learning-time">
+                                                <?php
+                                                $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
+                                                echo '<h6>Total time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                echo '<span><span class="icon-clock"></span></span>';
+                                                echo '<div>';
+                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
+                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                echo '</div>';
+                                                ?>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
                                     </div>
                                     <div class="kalamun-training-dashboard_course_cta">
                                         <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
