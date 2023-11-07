@@ -195,7 +195,7 @@
     justify-content: flex-start;
 }
 .kalamun-training-dashboard_heading h3 {
-    font-size: var(--font-size-xxlarge) !important;
+    font-size: var(--font-size-xlarge) !important;
     text-transform: uppercase;
     margin: 0;
     text-align: center;
