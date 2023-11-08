@@ -360,7 +360,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                             <div class="kalamun-training-dashboard_course_progress_line learning-time">
                                                 <?php
                                                 $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
-                                                echo '<h6>Total time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                echo '<h6>Course estimated learning time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
                                                 echo '<span><span class="icon-clock"></span></span>';
                                                 echo '<div>';
                                                     if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';

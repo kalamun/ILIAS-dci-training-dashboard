@@ -117,13 +117,15 @@
 
 .kalamun-training-dashboard_progress-bar {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--color-black);
+    background: var(--color-white);
+    border: 10px solid var(--color-white);
 }
 .kalamun-training-dashboard_progress-bar .progress {
     position: relative;
@@ -145,6 +147,7 @@
     font-size: var(--font-size-small);
     gap: 1em;
     align-items: center;
+    width: 100%;
 }
 .kalamun-training-dashboard_course_progress_line h6 {
     font-size: var(--font-size-small);
@@ -152,7 +155,7 @@
     text-align: right;
     flex-basis: 50%;
     min-width: 45%;
-    white-space: nowrap;
+    max-width: 45%;
 }
 .kalamun-training-dashboard_course_progress_line span {
     flex-basis: 1%;
@@ -162,6 +165,7 @@
 .kalamun-training-dashboard_course_progress_line div {
     flex-basis: 50%;
     min-width: 45%;
+    max-width: 45%;
     text-align: left;
 }
 .kalamun-training-dashboard_course_progress .dci-meter {
