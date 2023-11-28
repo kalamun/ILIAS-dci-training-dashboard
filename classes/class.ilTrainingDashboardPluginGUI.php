@@ -214,7 +214,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         /* courses */
         $courses = static::getCoursesOfUser($this->user->getId());
 
-        /* calendar */
         $owner = [];
         foreach($courses as $course) {
             $owner[] = "cc.obj_id = " . $course['obj_id'];
@@ -235,16 +234,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         while ($entry = $res->fetch(ilDBConstants::FETCHMODE_OBJECT)) {
             $calendar_entries[] = $entry;
         }
-
-        /* messages */
-        
-        $mbox = new ilMailbox($this->user->getId());
-        $folderId = $mbox->getInboxFolder();
-        ilMailBoxQuery::$userId = $this->user->getId();
-        ilMailBoxQuery::$folderId = $folderId;
-        ilMailBoxQuery::$limit = 5;
-        ilMailBoxQuery::$filter = ['mail_filter_only_unread' => true];
-        $inbox = ilMailBoxQuery::_getMailBoxListData()['set'];
 
         ob_start();
         ?>
@@ -383,139 +372,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     ?>
                     </div>
                 </div>
-                <?php
-                /*
-                if (count($inbox) > 0 || count($calendar_entries) > 0) {
-                    ?>
-                    <div class="kalamun-training-dashboard_sidebar">
-                        <?php
-                        if (count($inbox) > 0) {
-                            ?>
-                            <div class="kalamun-training-dashboard_inbox">
-                                <div class="kalamun-training-dashboard_title">
-                                    <?php
-                                    $inbox_permalink = $ctrl->getLinkTargetByClass("ilMailGUI", "showFolder");
-                                    ?>
-                                    <h2><a href="<?= $inbox_permalink; ?>"><span class="icon-mail"></span> Messages</a></h2>
-                                </div>
-                                <div class="kalamun-training-dashboard_entries">
-                                    <?php
-                                    foreach($inbox as $entry) {
-                                        $ctrl->setParameterByClass(ilMailGUI::class, 'mail_id', $entry['mail_id']);
-                                        $ctrl->setParameterByClass(ilMailGUI::class, 'mobj_id', $entry['folder_id']);
-                                        $ctrl->setParameterByClass(ilMailGUI::class, 'cmdClass', "ilmailfoldergui");
-                                        $permalink = $ctrl->getLinkTargetByClass(ilMailGUI::class, "showMail");
-                                        ?>
-                                        <div class="kalamun-training-dashboard_entry">
-                                            <a href="<?= $permalink; ?>">
-                                                <div class="kalamun-training-dashboard_inbox_date">
-                                                    <?php
-                                                    $date = new ilDateTime($entry['send_time'], IL_CAL_DATETIME);
-                                                    $date_parts = $date->get(IL_CAL_FKT_GETDATE);
-
-                                                    echo $date_parts['weekday'] . ' '
-                                                        . $date_parts['mday'] . ' '
-                                                        . $date_parts['month'] . ' '
-                                                        . $date_parts['year'] . ' ';
-                                                        
-                                                    if (!empty($date_parts['hours'])) {
-                                                        echo  '<div class="time">'
-                                                            . str_pad($date_parts['hours'], 2, "0", STR_PAD_LEFT) . ':'
-                                                            . str_pad($date_parts['minutes'], 2, "0", STR_PAD_LEFT)
-                                                            . '</div>';
-                                                    }
-                                                    ?>
-                                                </div>
-                                                <div class="kalamun-training-dashboard_inbox_title">
-                                                    <h3><?= $entry['m_subject']; ?></h3>
-                                                    <?php
-                                                    if (!empty($entry['m_message'])) {?>
-                                                        <div class="kalamun-training-dashboard_inbox_description"><?= self::get_first_sentence($entry['m_message']); ?>…</div>
-                                                        <?php }
-                                                    ?>
-                                                    <div class="kalamun-training-dashboard_inbox_cta"><button class="outlined theme-light">Read all <span class="icon-right"></span></button></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <?php
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-                            <?php
-                        }
-                        if (count($calendar_entries) > 0) {
-                            ?>
-                            <div class="kalamun-training-dashboard_calendar">
-                                <div class="kalamun-training-dashboard_title">
-                                    <h2><span class="icon-calendar"></span> Calendar</h2>
-                                </div>
-                                <div class="kalamun-training-dashboard_entries">
-                                    <?php
-                                    foreach($calendar_entries as $entry) {
-                                        if (!empty($entry->obj_id)) {
-                                            $query = "SELECT * FROM object_reference WHERE obj_id = " . intval($entry->obj_id) . " LIMIT 1";
-                                            $res = $db->query($query);
-                                            $ref = $res->fetch(ilDBConstants::FETCHMODE_OBJECT);
-                                            $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref->ref_id);
-                                            $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
-                                        }
-                                        ?>
-                                        <div class="kalamun-training-dashboard_entry">
-                                            <a href="<?= $permalink; ?>">
-                                                <div class="kalamun-training-dashboard_calendar_date">
-                                                    <?php
-                                                    $date = new ilDateTime($entry->starta, IL_CAL_DATETIME);
-                                                    $date_parts = $date->get(IL_CAL_FKT_GETDATE);
-
-                                                    echo $date_parts['weekday'] . ' '
-                                                        . $date_parts['mday'] . ' '
-                                                        . $date_parts['month'] . ' '
-                                                        . $date_parts['year'] . ' ';
-                                                        
-                                                    if (!empty($date_parts['hours'])) {
-                                                        echo  '<div class="time">'
-                                                            . str_pad($date_parts['hours'], 2, "0", STR_PAD_LEFT) . ':'
-                                                            . str_pad($date_parts['minutes'], 2, "0", STR_PAD_LEFT)
-                                                            . '</div>';
-                                                    }
-                                                    ?>
-                                                </div>
-                                                <div class="kalamun-training-dashboard_calendar_title">
-                                                    <h3><?= $entry->event_title; ?></h3>
-                                                    <?php
-                                                    if (!empty($entry->description)) {?>
-                                                        <div class="kalamun-training-dashboard_calendar_description"><?=$entry->description;?></div>
-                                                    <?php }
-                                                    ?>
-                                                    <div class="kalamun-training-dashboard_calendar_meta">
-                                                        <?php
-                                                        if (!empty($entry->title)) {?>
-                                                            <div class="kalamun-training-dashboard_calendar_title"><span class="icon-attachment"></span> <?=$entry->title;?></div>
-                                                        <?php }
-                                                        ?>
-                                                        <?php
-                                                        if (!empty($entry->location)) {?>
-                                                            <div class="kalamun-training-dashboard_calendar_location"><span class="icon-location"></span> <?=$entry->location;?></div>
-                                                        <?php }
-                                                        ?>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <?php
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-                            <?php
-                            }
-                        ?>
-                    </div>
-                    <?php
-                    }
-                */
-                ?>
             </div>
         </div>
         <?php
