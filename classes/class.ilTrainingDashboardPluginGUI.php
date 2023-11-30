@@ -334,11 +334,11 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                             $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
                                             if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
                                             else {
-                                                echo '<h6>Time spent' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                echo '<h6>' . $this->plugin->txt('time_spent') . '</h6>';
                                                 echo '<span><span class="icon-picto_timer_start"></span></span>';
                                                 echo '<div>';
-                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
-                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' ' . $this->plugin->txt('minutes');
                                                 echo '</div>';
                                             }
                                             ?>
@@ -349,11 +349,11 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                             <div class="kalamun-training-dashboard_course_progress_line learning-time">
                                                 <?php
                                                 $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
-                                                echo '<h6>Course estimated learning time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                echo '<h6>' . $this->plugin->txt('course_estimated_learning_time') . '</h6>';
                                                 echo '<span><span class="icon-picto_timer"></span></span>';
                                                 echo '<div>';
-                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
-                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' ' . $this->plugin->txt('minutes');
                                                 echo '</div>';
                                                 ?>
                                             </div>
@@ -362,7 +362,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         ?>
                                     </div>
                                     <div class="kalamun-training-dashboard_course_cta">
-                                        <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
+                                        <a href="<?= $permalink; ?>"><button><?= $this->plugin->txt($lp['spent_seconds'] > 60 ? 'continue' : 'start'); ?> <span class="icon-right"></span></button></a>
                                     </div>
                                 </div>
                             </div>
