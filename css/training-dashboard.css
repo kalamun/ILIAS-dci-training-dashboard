@@ -24,6 +24,7 @@
 
     background: url('../assets/mytraining_bkg.png') center center no-repeat var(--color-dark-blue);
     background-size: 80%;
+    background-position-y: 70%;
     color: var(--color-white);
     left: 50%;
     translate: -50svw 0;
@@ -93,9 +94,7 @@
     justify-content: center;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_course {
-    flex-basis: calc(33% - 1em);
-    min-width: 20rem;
-    max-width: 28rem;
+    width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
 }
@@ -269,3 +268,40 @@
         flex-direction: column;
     }
 }
+
+
+.dashboard.splide .splide__slide {
+    padding: 1rem;
+}
+.dashboard.splide {
+    width: 100%;
+}
+.dashboard.splide:not( .is-overflow ) .splide__list {
+    justify-content: center;
+}
+.dashboard.splide .splide__pagination {
+    position: relative;
+    gap: 0.5rem;
+}
+.dashboard.splide .splide__pagination button {
+    width: 0.6rem;
+    height: 0.6rem;
+    background-color: var(--color-white);
+    padding: 0;
+}
+
+.dashboard.splide .splide__arrows button {
+    width: 0.6rem;
+    height: 0.6rem;
+    background-color: transparent;
+    filter: invert();
+    padding: 0;
+    font-size: 2em;
+}
+.dashboard.splide .splide__arrows .splide__arrow--prev {
+    left: -1.5em;
+}
+.dashboard.splide .splide__arrows .splide__arrow--next {
+    right: -.5em;
+}
+

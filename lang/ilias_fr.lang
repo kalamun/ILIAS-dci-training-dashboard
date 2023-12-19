@@ -2,10 +2,11 @@ cmd_insert#:#Insérer la Training Dashboard
 content_plugin_version#:#Contenu modifié pour la dernière fois avec la version
 edit_input_field#:#Modifier la Training Dashboard
 learn_more#:#En savoir plus
-completed#:#Effectué
+completed#:#Terminé
 time_spent#:#Temps passé
-course_estimated_learning_time#:#Temps d'apprentissage estimé du cours
+course_estimated_learning_time#:#Temps d'apprentissage estimé
 hours#:#heures
 minutes#:#minutes
 continue#:#Continuer
-start#:#Démarrer
+start#:#Commencer
+not_started_yet#:#Non démarré
