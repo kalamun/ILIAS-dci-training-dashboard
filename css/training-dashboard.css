@@ -108,6 +108,7 @@
     font-weight: bold;
     font-size: var(--font-size-large);
     text-transform: uppercase;
+    text-align: center;
 }
 
 .kalamun-training-dashboard_progress-bar {
