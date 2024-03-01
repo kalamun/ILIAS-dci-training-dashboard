@@ -335,14 +335,17 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                                     <div class="kalamun-training-dashboard_course_progress">
                                                         <div class="kalamun-training-dashboard_course_progress_line time">
                                                             <?php
-                                                            $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                                                            if ($time_spent[0] == 0 && $time_spent[1] == 0) $this->plugin->txt('not_started_yet');
+                                                            $time_spent = [
+                                                                "h" => floor(($lp['spent_seconds'] / 60) / 60),
+                                                                "m" => floor($lp['spent_seconds'] / 60) % 60,
+                                                            ];
+                                                            if ($time_spent["m"] == 0 && $time_spent["h"] == 0) $this->plugin->txt('not_started_yet');
                                                             else {
                                                                 echo '<h6>' . $this->plugin->txt('time_spent') . '</h6>';
                                                                 echo '<span><span class="icon-picto_timer_start"></span></span>';
                                                                 echo '<div>';
-                                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' ' . $this->plugin->txt('hours') . '<br>';
-                                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' ' . $this->plugin->txt('minutes');
+                                                                    if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                                    if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
                                                                 echo '</div>';
                                                             }
                                                             ?>
@@ -352,12 +355,15 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                                             ?>
                                                             <div class="kalamun-training-dashboard_course_progress_line learning-time">
                                                                 <?php
-                                                                $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
+                                                                $time_spent = [
+                                                                    "h" => floor(($typical_learning_time / 60) / 60),
+                                                                    "m" => floor($typical_learning_time / 60) % 60,
+                                                                ];
                                                                 echo '<h6>' . $this->plugin->txt('course_estimated_learning_time') . '</h6>';
                                                                 echo '<span><span class="icon-picto_timer"></span></span>';
                                                                 echo '<div>';
-                                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' ' . $this->plugin->txt('hours') . '<br>';
-                                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' ' . $this->plugin->txt('minutes');
+                                                                    if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                                    if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
                                                                 echo '</div>';
                                                                 ?>
                                                             </div>
