@@ -282,7 +282,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
                                     foreach ($course_tabs as $page) {
                                         if (!$page['completed']) {
-                                            $permalink = $page['permalink'];
+                                            // $permalink = $page['permalink'];
                                             break;
                                         }
                                     }

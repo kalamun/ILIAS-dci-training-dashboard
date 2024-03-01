@@ -7,6 +7,6 @@ time_spent#:#Temps passé
 course_estimated_learning_time#:#Temps d'apprentissage estimé
 hours#:#heures
 minutes#:#minutes
-continue#:#Continuer
-start#:#Commencer
+continue#:#En cours
+start#:#Démarrer
 not_started_yet#:#Non démarré

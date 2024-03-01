@@ -108,6 +108,7 @@
     font-weight: bold;
     font-size: var(--font-size-large);
     text-transform: uppercase;
+    text-align: center;
 }
 
 .kalamun-training-dashboard_progress-bar {
@@ -291,12 +292,17 @@
 }
 
 .dashboard.splide .splide__arrows button {
-    width: 0.6rem;
-    height: 0.6rem;
-    background-color: transparent;
-    filter: invert();
+    background-color: var(--color-blue);
     padding: 0;
     font-size: 2em;
+    border-radius: 5rem;
+    width: 1.2em;
+    height: 1.2em;
+    outline: 0.2em solid var(--color-blue);
+    opacity: 1;
+}
+.dashboard.splide .splide__arrows button svg {
+    filter: invert();
 }
 .dashboard.splide .splide__arrows .splide__arrow--prev {
     left: -1.5em;
