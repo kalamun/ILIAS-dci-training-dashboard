@@ -67,6 +67,7 @@
     flex-basis: 100%;
     word-wrap: break-word;
     line-height: 1.2;
+    max-width: 100%;
 }
 .kalamun-training-dashboard .kalamun-training-dashboard_title h2 {
     margin: 0 !important;
