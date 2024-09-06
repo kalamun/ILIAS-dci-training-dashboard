@@ -273,6 +273,7 @@
 
 .dashboard.splide .splide__slide {
     padding: 1rem;
+    max-width: calc(33.3333%);
 }
 .dashboard.splide {
     width: 100%;
