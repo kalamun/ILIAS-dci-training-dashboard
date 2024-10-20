@@ -13,11 +13,10 @@ class ilTrainingDashboardImporter extends ilXmlImporter
      * @return    string        xml string
      */
     public function importXmlRepresentation(
-        /* string */ $a_entity,
-        /* string */ $a_id,
-        /* string */ $a_xml,
-        /* ilImportMapping */ $a_mapping
-    ) /* : void */ {
-      return false;
+        string $a_entity,
+        string $a_id,
+        string $a_xml,
+        ilImportMapping $a_mapping
+    ) : void {
     }
 }

@@ -24,7 +24,7 @@
  */
 class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 {
-    protected /* ilLanguage */ $lng;
+    protected ilLanguage $lng;
     protected ilCtrl $ctrl;
     protected ilGlobalTemplateInterface $tpl;
     protected ilTree $tree;
@@ -202,7 +202,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
      * @param string    page mode (edit, presentation, print, preview, offline)
      * @return string   html code
      */
-    public function getElementHTML( /* string */$a_mode, /* array */ $a_properties, /* string */ $a_plugin_version) /* : string */
+    public function getElementHTML( string $a_mode, array $a_properties, string $a_plugin_version) : string
     {
         global $DIC;
         $ctrl = $DIC->ctrl();

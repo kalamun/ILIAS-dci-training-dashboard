@@ -13,7 +13,7 @@ class ilTrainingDashboardExporter extends ilXmlExporter
      * @param string        id
      * @return    string        xml string
      */
-    public function getXmlRepresentation(/* string */ $a_entity, /* string */ $a_schema_version, /* string */ $a_id) /* : string */
+    public function getXmlRepresentation(string $a_entity, string $a_schema_version, string $a_id) : string
     {
         return false;
     }
@@ -37,7 +37,7 @@ class ilTrainingDashboardExporter extends ilXmlExporter
      * @param string $a_entity
      * @return string[][]
      */
-    public function getValidSchemaVersions(/* string */ $a_entity) /* : array */
+    public function getValidSchemaVersions(string$a_entity) : array
     {
         return array(
             "5.2.0" => array(

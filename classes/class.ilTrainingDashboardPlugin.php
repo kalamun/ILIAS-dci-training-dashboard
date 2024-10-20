@@ -18,14 +18,14 @@ class ilTrainingDashboardPlugin extends ilPageComponentPlugin
     /**
      * Check if parent type is valid
      */
-    public function isValidParentType(/* string */ $a_parent_type) /* :  bool */
+    public function isValidParentType(string $a_parent_type) :  bool
     {
         // test with all parent types
         return true;
     }
 
 
-    public function getCssFiles(/* string */ $a_mode)/* : array */
+    public function getCssFiles(string $a_mode) : array
     {
         return ["css/training-dashboard.css"];
     }
