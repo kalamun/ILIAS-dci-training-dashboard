@@ -255,7 +255,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                 <?php
                                 foreach ($courses as $course) {
                                     $ref_id = $course['ref_id'];
-                                    $obj = ilObjectFactory::getInstanceByRefId($ref_id);
+                                    $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
                                     if (empty($obj) || $obj->getOfflineStatus()) {
                                         continue;
                                     }
