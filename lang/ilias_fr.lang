@@ -10,3 +10,12 @@ minutes#:#minutes
 continue#:#En cours
 start#:#Démarrer
 not_started_yet#:#Non démarré
+sort#:#Trier les cours par
+alphabetical#:#Ordre alphabétique
+last_visited#:#Récemment visité
+limit#:#Limiter le nombre de cards affichées à
+limit-info#:#Définir 0 pour tout afficher
+layout#:#Mise en page
+card#:#Card
+banner#:#Bannière
+background#:#Couleur d'arrière-plan

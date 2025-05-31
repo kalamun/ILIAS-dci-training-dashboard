@@ -139,21 +139,48 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $form = new ilPropertyFormGUI();
 
         // title
-        $input_title = new ilTextInputGUI($this->lng->txt("title"), 'title');
+        $input_title = new ilTextInputGUI($this->plugin->txt("title"), "title");
         $input_title->setMaxLength(255);
         $input_title->setSize(40);
         $input_title->setRequired(false);
         $form->addItem($input_title);
 
         // description
-        $input_description = new ilTextInputGUI($this->lng->txt("description"), 'description');
+        $input_description = new ilTextInputGUI($this->plugin->txt("description"), "description");
         $input_description->setMaxLength(255);
         $input_description->setSize(40);
         $input_description->setRequired(false);
         $form->addItem($input_description);
 
+        // sorting: alphabetical, last access
+        $input_sort = new ilSelectInputGUI($this->plugin->txt("sort"), "sort");
+        $input_sort->setOptions(["alphabetical" => $this->plugin->txt("alphabetical"), "last_visited" => $this->plugin->txt("last_visited")]);
+        $form->addItem($input_sort);
+
+        // limit (number of cards to show, 0 = all)
+        $input_limit = new ilNumberInputGUI($this->plugin->txt("limit"), "limit");
+        $input_limit->setClientSideValidation(true);
+        $input_limit->setInfo($this->plugin->txt("limit-info"));
+        $input_limit->setSize(4);
+        $input_limit->setMinvalueShouldBeGreater(0);
+        $input_limit->setMaxvalueShouldBeLess(30);
+        $input_limit->setRequired(false);
+        $form->addItem($input_limit);
+        
+        // layout: card or banner
+        $input_layout = new ilSelectInputGUI($this->plugin->txt("layout"), "layout");
+        $input_layout->setOptions(["card" => $this->plugin->txt("card"), "banner" => $this->plugin->txt("banner")]);
+        $form->addItem($input_layout);
+
+        // background color
+        $input_bkg = new ilColorPickerInputGUI($this->plugin->txt("background"), "background");
+        $input_bkg->setDefaultColor("003b5d");
+        $input_bkg->setRequired(false);
+        $form->addItem($input_bkg);
+
         // save and cancel commands
         if ($a_create) {
+            $input_limit->setValue(0);
             $this->addCreationButton($form);
             $form->addCommandButton("cancel", $this->lng->txt("cancel"));
             $form->setTitle($this->plugin->getPluginName());
@@ -161,6 +188,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $prop = $this->getProperties();
             $input_title->setValue($prop['title']);
             $input_description->setValue($prop['description']);
+            $input_sort->setValue($prop['sort']);
+            $input_limit->setValue($prop['limit']);
+            $input_layout->setValue($prop['layout']);
+            $input_bkg->setValue($prop['background']);
 
             $form->addCommandButton("update", $this->lng->txt("save"));
             $form->addCommandButton("cancel", $this->lng->txt("cancel"));
@@ -178,6 +209,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
             $properties['title'] = $form->getInput('title');
             $properties['description'] = $form->getInput('description');
+            $properties['sort'] = $form->getInput('sort');
+            $properties['limit'] = $form->getInput('limit');
+            $properties['layout'] = $form->getInput('layout');
+            $properties['background'] = $form->getInput('background');
 
             if ($a_create) {
                 return $this->createElement($properties);
@@ -210,34 +245,17 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         
         $title = !empty($a_properties['title']) ? $a_properties['title'] : "";
         $description = !empty($a_properties['description']) ? $a_properties['description'] : "";
+        $order = !empty($a_properties['sort']) ? $a_properties['sort'] : "alphabetical";
+        $limit = !empty($a_properties['limit']) ? $a_properties['limit'] : 0;
+        $layout = !empty($a_properties['layout']) ? $a_properties['layout'] : "card";
+        $background = !empty($a_properties['background']) ? $a_properties['background'] : "003b5d";
 
         /* courses */
-        $courses = static::getCoursesOfUser($this->user->getId());
-
-        $owner = [];
-        foreach($courses as $course) {
-            $owner[] = "cc.obj_id = " . $course['obj_id'];
-        }
-
-        // prevent SQL syntax errors when user has no courses
-        if (count($owner) == 0) {
-            $owner[] = "cc.obj_id = 0";
-        }
-
-        $query = "SELECT *, ce.title as event_title FROM cal_entries ce" .
-            " JOIN cal_cat_assignments cca ON ce.cal_id = cca.cal_id" .
-            " JOIN cal_categories cc ON cca.cat_id = cc.cat_id" .
-            " WHERE cc.type = 2 AND (" . implode(" OR ", $owner) . ") AND ce.starta >= NOW() ORDER BY ce.starta ASC LIMIT 3";
-
-        $res = $db->query($query);
-        $calendar_entries = [];
-        while ($entry = $res->fetch(ilDBConstants::FETCHMODE_OBJECT)) {
-            $calendar_entries[] = $entry;
-        }
+        $courses = static::getCoursesOfUser($this->user->getId(), $limit);
 
         ob_start();
         ?>
-        <div class="kalamun-training-dashboard">
+        <div class="kalamun-training-dashboard" data-layout="<?= $layout; ?>" <?= !empty($background) ? 'style="--background-color: #'. str_replace('"', '', $background) .'"' : '' ?>>
             <div class="kalamun-training-dashboard-scrolldown"><span class="icon-down"></span></div>
             <div class="kalamun-training-dashboard_body">
                 <div class="kalamun-training-dashboard_title">
@@ -249,90 +267,263 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                     ?>
                 </div>
                 <div class="kalamun-training-dashboard_courses">
-                    <div class="dashboard splide">
-                        <div class="splide__track">
-                            <ul class="splide__list">
-                                <?php
-                                foreach ($courses as $course) {
-                                    $ref_id = $course['ref_id'];
-                                    $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
-                                    if (empty($obj) || $obj->getOfflineStatus()) {
-                                        continue;
-                                    }
-                                    $obj_id = $obj->getId();
-                                    
-                                    $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
-                                    $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
+                    <?php
+                    if ($layout == "card") {
+                        ?>
+                        <div class="dashboard splide">
+                            <div class="splide__track">
+                                <ul class="splide__list">
+                                    <?php
+                                    foreach ($courses as $course) {
+                                        $ref_id = $course['ref_id'];
 
-                                    $type = $obj->getType();
-                                    $title = $obj->getTitle();
-                                    $description = $obj->getDescription();
-                                    $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
-                                    $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
-                                    $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
-
-                                    $course_tabs = dciSkin_tabs::getCourseTabs($ref_id, $this->plugin->txt("progress_status"));
-                                    $mandatory_cards_count = 0;
-                                    $completed_cards_count = 0;
-                                    
-                                    foreach ($course_tabs as $page) {
-                                        $mandatory_cards_count += $page['cards_mandatory'];
-                                        $completed_cards_count += $page['cards_completed'];
-                                    }
-
-                                    foreach ($course_tabs as $page) {
-                                        if (!$page['completed']) {
-                                            // $permalink = $page['permalink'];
-                                            break;
+                                        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+                                        if (empty($obj) || $obj->getOfflineStatus()) {
+                                            continue;
                                         }
-                                    }
+                                        $obj_id = $obj->getId();
+                                        
+                                        $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
+                                        $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
 
-                                    /* progress statuses:
-                                    0 = attempt
-                                    1 = in progress;
-                                    2 = completed;
-                                    3 = failed;
-                                    */
-                                    $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
-                                    $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
-                                    $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
-                                    $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
-                                    $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
-                                    $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
-                                    $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+                                        $type = $obj->getType();
+                                        $title = $obj->getTitle();
+                                        $description = $obj->getDescription();
 
-                                    $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+                                        if (class_exists("ilCourseCoverGUI")) {
+                                            // use square cover defined by the CourseCover plugin, if available
+                                            $courseCover = new ilCourseCoverGUI();
+                                            $tile_image_path = $courseCover->getCoverURL($ref_id, "square");
+                                            $tile_image_exists = !empty($tile_image_path);
+                                        }
+                                        
+                                        if (empty($tile_image_exists)) {
+                                            // use tile image as cover
+                                            $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
+                                            $tile_image_path = $tile_image->getFullPath();
+                                            $tile_image_exists = $tile_image->exists();
+                                        }
 
-                                    ?>
-                                    <li class="splide__slide">
-                                        <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
-                                            <div class="kalamun-training-dashboard_thumb">
-                                                <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : '<span class="empty-thumb"></span>'); ?>
-                                            </div>
-                                            <?php
-                                            if ($mandatory_cards_count > 0) {
-                                                ?>
-                                                <div class="kalamun-training-dashboard_progress-bar">
-                                                    <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
-                                                    <span class="progress">
-                                                        <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
-                                                    </span>
+                                        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
+                                        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
+
+                                        $course_tabs = dciSkin_tabs::getCourseTabs($ref_id, $this->plugin->txt("progress_status"));
+                                        $mandatory_cards_count = 0;
+                                        $completed_cards_count = 0;
+                                        
+                                        foreach ($course_tabs as $page) {
+                                            $mandatory_cards_count += $page['cards_mandatory'];
+                                            $completed_cards_count += $page['cards_completed'];
+                                        }
+
+                                        foreach ($course_tabs as $page) {
+                                            if (!$page['completed']) {
+                                                // $permalink = $page['permalink'];
+                                                break;
+                                            }
+                                        }
+
+                                        /* progress statuses:
+                                        0 = attempt
+                                        1 = in progress;
+                                        2 = completed;
+                                        3 = failed;
+                                        */
+                                        $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
+                                        $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
+                                        $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
+                                        $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
+                                        $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
+                                        $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
+                                        $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+
+                                        $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+
+                                        ?>
+                                        <li class="splide__slide">
+                                            <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
+                                                <div class="kalamun-training-dashboard_thumb">
+                                                    <?= ($tile_image_exists ? '<a href="' . $permalink . '"><img src="' . $tile_image_path . '"></a>' : '<span class="empty-thumb"></span>'); ?>
                                                 </div>
                                                 <?php
-                                            }
-                                            ?>
-                                            <div class="kalamun-training-dashboard_course_body">
-                                                <div class="kalamun-training-dashboard_heading">
-                                                    <h3><?= $title; ?></h3>
-                                                </div>
-                                                <div class="kalamun-training-dashboard_course_meta">
-                                                    <p class="kalamun-training-dashboard_title"><?= $title; ?></p>
+                                                if ($mandatory_cards_count > 0) {
+                                                    ?>
+                                                    <div class="kalamun-training-dashboard_progress-bar">
+                                                        <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                                        <span class="progress">
+                                                            <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
+                                                        </span>
+                                                    </div>
                                                     <?php
-                                                    if (!empty($description)) {
-                                                        ?><p><?= $description; ?></p><?php
+                                                }
+                                                ?>
+                                                <div class="kalamun-training-dashboard_course_body">
+                                                    <div class="kalamun-training-dashboard_heading">
+                                                        <h3><?= $title; ?></h3>
+                                                    </div>
+                                                    <div class="kalamun-training-dashboard_course_meta">
+                                                        <p class="kalamun-training-dashboard_title"><?= $title; ?></p>
+                                                        <?php
+                                                        if (!empty($description)) {
+                                                            ?><p><?= $description; ?></p><?php
+                                                        }
+                                                        ?>
+                                                        <div class="kalamun-training-dashboard_course_progress">
+                                                            <div class="kalamun-training-dashboard_course_progress_line time">
+                                                                <?php
+                                                                $time_spent = [
+                                                                    "h" => floor(($lp['spent_seconds'] / 60) / 60),
+                                                                    "m" => floor($lp['spent_seconds'] / 60) % 60,
+                                                                ];
+                                                                if ($time_spent["m"] == 0 && $time_spent["h"] == 0) $this->plugin->txt('not_started_yet');
+                                                                else {
+                                                                    echo '<h6>' . $this->plugin->txt('time_spent') . '</h6>';
+                                                                    echo '<span><span class="icon-picto_timer_start"></span></span>';
+                                                                    echo '<div>';
+                                                                        if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                                        if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
+                                                                    echo '</div>';
+                                                                }
+                                                                ?>
+                                                            </div>
+                                                            <?php
+                                                            if (!empty($typical_learning_time)) {
+                                                                ?>
+                                                                <div class="kalamun-training-dashboard_course_progress_line learning-time">
+                                                                    <?php
+                                                                    $time_spent = [
+                                                                        "h" => floor(($typical_learning_time / 60) / 60),
+                                                                        "m" => floor($typical_learning_time / 60) % 60,
+                                                                    ];
+                                                                    echo '<h6>' . $this->plugin->txt('course_estimated_learning_time') . '</h6>';
+                                                                    echo '<span><span class="icon-picto_timer"></span></span>';
+                                                                    echo '<div>';
+                                                                        if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
+                                                                        if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
+                                                                    echo '</div>';
+                                                                    ?>
+                                                                </div>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                        <div class="kalamun-training-dashboard_course_cta">
+                                                            <a href="<?= $permalink; ?>"><button><?= $this->plugin->txt($lp['spent_seconds'] > 60 ? 'continue' : 'start'); ?> <span class="icon-right"></span></button></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <?php
+                                    }
+                                    ?>
+                                </ul>
+                            </div>
+                        </div>
+                        <?php
+
+                    } elseif ($layout == "banner") {
+                        ?>
+                        <div class="dashboard">
+                            <div class="dashboard__inner">
+                                <ul class="dashboard__banners">
+                                    <?php
+                                    foreach ($courses as $course) {
+                                        $ref_id = $course['ref_id'];
+                                        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+                                        if (empty($obj) || $obj->getOfflineStatus()) {
+                                            continue;
+                                        }
+                                        $obj_id = $obj->getId();
+                                        
+                                        $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
+                                        $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
+
+                                        $type = $obj->getType();
+                                        $title = $obj->getTitle();
+                                        $description = $obj->getDescription();
+
+                                        if (class_exists("ilCourseCoverGUI")) {
+                                            // use square cover defined by the CourseCover plugin, if available
+                                            $courseCover = new ilCourseCoverGUI();
+                                            $tile_image_path = $courseCover->getCoverURL($ref_id, "banner");
+                                            $tile_image_exists = !empty($tile_image_path);
+                                            $logo_image_path = $courseCover->getCoverURL($ref_id, "logo");
+                                            $logo_image_exists = !empty($logo_image_path);
+                                        }
+                                        
+                                        if (empty($tile_image_exists)) {
+                                            // use tile image as cover
+                                            $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
+                                            $tile_image_path = $tile_image->getFullPath();
+                                            $tile_image_exists = $tile_image->exists();
+                                            $logo_image_path = '';
+                                            $logo_image_exists = false;
+                                        }
+
+                                        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
+                                        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
+
+                                        $course_tabs = dciSkin_tabs::getCourseTabs($ref_id, $this->plugin->txt("progress_status"));
+                                        $mandatory_cards_count = 0;
+                                        $completed_cards_count = 0;
+                                        
+                                        foreach ($course_tabs as $page) {
+                                            $mandatory_cards_count += $page['cards_mandatory'];
+                                            $completed_cards_count += $page['cards_completed'];
+                                        }
+
+                                        foreach ($course_tabs as $page) {
+                                            if (!$page['completed']) {
+                                                // $permalink = $page['permalink'];
+                                                break;
+                                            }
+                                        }
+
+                                        /* progress statuses:
+                                        0 = attempt
+                                        1 = in progress;
+                                        2 = completed;
+                                        3 = failed;
+                                        */
+                                        $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
+                                        $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
+                                        $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
+                                        $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
+                                        $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
+                                        $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
+                                        $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+
+                                        $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+
+                                        ?>
+                                        <li class="dashboard__banner">
+                                            <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
+                                                <div class="kalamun-training-dashboard_course_body">
+                                                    <div class="kalamun-training-dashboard_thumb">
+                                                        <?= ($tile_image_exists ? '<a href="' . $permalink . '"><img src="' . $tile_image_path . '"></a>' : '<span class="empty-thumb"></span>'); ?>
+                                                    </div>
+                                                    <?php
+                                                    if ($logo_image_exists) {
+                                                        ?>
+                                                        <div class="kalamun-training-dashboard_logo">
+                                                            <img src="<?= $logo_image_path; ?>">
+                                                        </div>
+                                                        <?php
                                                     }
                                                     ?>
-                                                    <div class="kalamun-training-dashboard_course_progress">
+                                                    <div class="kalamun-training-dashboard_course_meta">
+                                                        <?php
+                                                        if ($mandatory_cards_count > 0) {
+                                                            ?>
+                                                            <div class="kalamun-training-dashboard_course_progress_line progress">
+                                                                <span class="progress">
+                                                                    <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
+                                                                </span>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                        ?>
                                                         <div class="kalamun-training-dashboard_course_progress_line time">
                                                             <?php
                                                             $time_spent = [
@@ -342,7 +533,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                                             if ($time_spent["m"] == 0 && $time_spent["h"] == 0) $this->plugin->txt('not_started_yet');
                                                             else {
                                                                 echo '<h6>' . $this->plugin->txt('time_spent') . '</h6>';
-                                                                echo '<span><span class="icon-picto_timer_start"></span></span>';
                                                                 echo '<div>';
                                                                     if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
                                                                     if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
@@ -360,7 +550,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                                                     "m" => floor($typical_learning_time / 60) % 60,
                                                                 ];
                                                                 echo '<h6>' . $this->plugin->txt('course_estimated_learning_time') . '</h6>';
-                                                                echo '<span><span class="icon-picto_timer"></span></span>';
                                                                 echo '<div>';
                                                                     if ($time_spent["h"] > 0) echo $time_spent["h"] . ' ' . $this->plugin->txt('hours') . '<br>';
                                                                     if ($time_spent["m"] > 0) echo $time_spent["m"] . ' ' . $this->plugin->txt('minutes');
@@ -370,20 +559,22 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                                             <?php
                                                         }
                                                         ?>
-                                                    </div>
-                                                    <div class="kalamun-training-dashboard_course_cta">
-                                                        <a href="<?= $permalink; ?>"><button><?= $this->plugin->txt($lp['spent_seconds'] > 60 ? 'continue' : 'start'); ?> <span class="icon-right"></span></button></a>
+                                                        <div class="kalamun-training-dashboard_course_cta">
+                                                            <a href="<?= $permalink; ?>"><button><?= $this->plugin->txt($lp['spent_seconds'] > 60 ? 'continue' : 'start'); ?> <span class="icon-right"></span></button></a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    <?php
-                                }
-                                ?>
-                            </ul>
+                                        </li>
+                                        <?php
+                                    }
+                                    ?>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
         </div>
@@ -411,10 +602,13 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
 
     public static function getCoursesOfUser(
-        int $a_user_id
+        int $a_user_id, int $limit = 0
     ): array {
         global $DIC;
         $tree = $DIC->repositoryTree();
+
+        // limit = 0 means all, so set a huge number
+        if ($limit == 0) $limit = 9999;
 
         // see ilPDSelectedItemsBlockGUI
 
@@ -422,7 +616,11 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
 
         $references = [];
         $lp_obj_refs = [];
+        $count = 0;
         foreach ($items as $obj_id) {
+            if ($count > $limit) break;
+            $count++;
+
             $ref_id = ilObject::_getAllReferences($obj_id);
             if (is_array($ref_id) && count($ref_id)) {
                 $ref_id = array_pop($ref_id);

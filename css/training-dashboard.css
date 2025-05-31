@@ -10,6 +10,7 @@
     --color-black: #1d1d1d;
 
     --color-red: #d11b26;
+    --color-light-red: #ec3b47;
     --color-blue: #006aa5;
     --color-dark-blue: #003b5d;
 
@@ -22,7 +23,7 @@
     display: flex;
     gap: 1.5em;
 
-    background: url('../assets/mytraining_bkg.png') center center no-repeat var(--color-dark-blue);
+    background: url('../assets/mytraining_bkg.png') center center no-repeat var(--background-color, var(--color-dark-blue));
     background-size: 80%;
     background-position-y: 70%;
     color: var(--color-white);
@@ -31,285 +32,375 @@
     width: 100svw;
     padding: 4rem calc(50svw - 50%);
     margin-top: 50px;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_entry > a,
-.kalamun-training-dashboard .kalamun-training-dashboard_entry > a:hover {
-    display: block;
-    color: var(--color-black);
-    text-decoration: none !important;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_prevent-link {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-}
 
-.kalamun-training-dashboard .kalamun-training-dashboard-scrolldown {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    translate: -50% 0;
-    background: var(--color-white);
-    color: var(--color-blue);
-    clip-path: polygon(50% 100%, 100% 0, 0 0);
-    width: 2.6em;
-    text-align: center;
-    font-size: 2em;
-    height: 1.3em;
-}
+    .kalamun-training-dashboard_entry > a:hover {
+        display: block;
+        color: var(--color-black);
+        text-decoration: none !important;
+    }
+    .kalamun-training-dashboard_prevent-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+    }
+    
+    .kalamun-training-dashboard-scrolldown {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        translate: -50% 0;
+        background: var(--color-white);
+        color: var(--color-blue);
+        clip-path: polygon(50% 100%, 100% 0, 0 0);
+        width: 2.6em;
+        text-align: center;
+        font-size: 2em;
+        height: 1.3em;
+    }
 
-.kalamun-training-dashboard :where(.kalamun-training-dashboard_body, .kalamun-training-dashboard_sidebar) {
-    display: flex;
-    flex-direction: column;
-    flex-basis: 100%;
-    word-wrap: break-word;
-    line-height: 1.2;
-    max-width: 100%;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_title h2 {
-    margin: 0 !important;
-    text-transform: uppercase;
-    font-size: var(--font-size-xxlarge) !important;
-    color: var(--color-white);
-    border-bottom: 1px solid var(--color-xlight-grey);
-    padding: 0 1em 0.8em;
-    text-align: center;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_body {
-    border-color: transparent;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_body .kalamun-training-dashboard_title h2 {
-    border-bottom-color: transparent;
-}
-
-.kalamun-training-dashboard .kalamun-training-dashboard_title h3 {
-    margin: 0 auto;
-}
-.kalamun-training-dashboard :where(.kalamun-training-dashboard_courses, .kalamun-training-dashboard_entries) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
-    justify-content: center;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_course {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_entry {
-    padding: 1.5em;
-    border-bottom: 1px solid var(--color-xlight-grey);
-    width: 100%;
-}
-
-.kalamun-training-dashboard_title {
-    font-weight: bold;
-    font-size: var(--font-size-large);
-    text-transform: uppercase;
-    text-align: center;
-}
-
-.kalamun-training-dashboard_progress-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-black);
-    background: var(--color-white);
-    border: 6px solid var(--color-white);
-}
-.kalamun-training-dashboard_progress-bar .progress {
-    position: relative;
-    z-index: 20;
-}
-.kalamun-training-dashboard_progress-bar .dci-meter-value {
-    display: none;
-}
-
-.kalamun-training-dashboard_course_progress {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1em;
-    margin: 1em 0;
-}
-.kalamun-training-dashboard_course_progress_line {
-    display: flex;
-    font-size: var(--font-size-small);
-    gap: 1em;
-    align-items: center;
-    width: 100%;
-}
-.kalamun-training-dashboard_course_progress_line h6 {
-    font-size: var(--font-size-small);
-    margin: 0 !important;
-    text-align: right;
-    flex-basis: 50%;
-    min-width: 45%;
-    max-width: 45%;
-}
-.kalamun-training-dashboard_course_progress_line span {
-    flex-basis: 1%;
-    text-align: center;
-    font-size: var(--font-size-large);
-}
-.kalamun-training-dashboard_course_progress_line div {
-    flex-basis: 50%;
-    min-width: 45%;
-    max-width: 45%;
-    text-align: left;
-}
-.kalamun-training-dashboard_course_progress .dci-meter {
-    font-size: 1.2em;
-    translate: 0.3em 0.2em;
-}
-.kalamun-training-dashboard_course_progress .dci-meter .percent {
-    display: none;
-}
-.kalamun-training-dashboard_course {
-    cursor: pointer;
-    position: relative;
-}
-.kalamun-training-dashboard_course_body {
-    position: relative;
-    color: var(--color-white);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-content: center;
-    justify-content: center;
-}
-
-.kalamun-training-dashboard_heading {
-    width: 100%;
-    height: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 65%;
-}
-.kalamun-training-dashboard_heading h3 {
-    font-size: var(--font-size-xlarge) !important;
-    text-transform: uppercase;
-    margin: 0;
-    text-align: center;
-    padding: 1rem;
-}    
-.kalamun-training-dashboard_heading h3::before {
-    content: '# ';
-    color: var(--color-red);
-}
-.kalamun-training-dashboard_more {
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1em;
-    white-space: nowrap;
-    text-transform: uppercase;
-}
-.kalamun-training-dashboard_more::before {
-    content: '';
-    border-bottom: 1px solid var(--color-white);
-    width: 100%;
-    display: block;
-    flex-grow: 2;
-}
-
-.kalamun-training-dashboard_thumb {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    background: var(--color-blue);
-}
-.kalamun-training-dashboard_thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.kalamun-training-dashboard_thumb .empty-thumb {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: var(--color-xxlight-grey);
-}
-
-.kalamun-training-dashboard .kalamun-training-dashboard_course_meta {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    background: var(--color-white);
-    color: var(--color-blue);
-    transition: top .3s ease-in-out;
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_course_meta .kalamun-training-dashboard_title:before {
-    content: '# ';
-    color: var(--color-red);
-}
-.kalamun-training-dashboard .kalamun-training-dashboard_course:hover .kalamun-training-dashboard_course_meta {
-    top: 0;
-}
-
-
-@container kalamun-training-dashboard (max-width: 500px) {
-    .kalamun-training-dashboard .kalamun-training-dashboard_body {
+    :where(.kalamun-training-dashboard_body, .kalamun-training-dashboard_sidebar) {
+        display: flex;
         flex-direction: column;
+        flex-basis: 100%;
+        word-wrap: break-word;
+        line-height: 1.2;
+        max-width: 100%;
+    }
+    .kalamun-training-dashboard_title h2 {
+        margin: 0 !important;
+        text-transform: uppercase;
+        font-size: var(--font-size-xxlarge) !important;
+        color: var(--color-white);
+        border-bottom: 1px solid var(--color-xlight-grey);
+        padding: 0 1em 0.8em;
+        text-align: center;
+    }
+    .kalamun-training-dashboard_body {
+        border-color: transparent;
+    }
+    .kalamun-training-dashboard_body .kalamun-training-dashboard_title h2 {
+        border-bottom-color: transparent;
+    }
+    .kalamun-training-dashboard_title h3 {
+        margin: 0 auto;
     }
 }
 
 
-.dashboard.splide .splide__slide {
-    padding: 1rem;
-    max-width: calc(33.3333%);
-}
-.dashboard.splide {
-    width: 100%;
-}
-.dashboard.splide:not( .is-overflow ) .splide__list {
-    justify-content: center;
-}
-.dashboard.splide .splide__pagination {
-    position: relative;
-    gap: 0.5rem;
-}
-.dashboard.splide .splide__pagination button {
-    width: 0.6rem;
-    height: 0.6rem;
-    background-color: var(--color-white);
-    padding: 0;
+.kalamun-training-dashboard[data-layout="card"] {    .kalamun-training-dashboard_entry > a,
+    :where(.kalamun-training-dashboard_courses, .kalamun-training-dashboard_entries) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
+        justify-content: center;
+    }
+    .kalamun-training-dashboard_course {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+    }
+    .kalamun-training-dashboard_entry {
+        padding: 1.5em;
+        border-bottom: 1px solid var(--color-xlight-grey);
+        width: 100%;
+    }
+    
+    .kalamun-training-dashboard_title {
+        font-weight: bold;
+        font-size: var(--font-size-large);
+        text-transform: uppercase;
+        text-align: center;
+    }
+    
+    .kalamun-training-dashboard_progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--color-black);
+        background: var(--color-white);
+        border: 6px solid var(--color-white);
+    }
+    .kalamun-training-dashboard_progress-bar .progress {
+        position: relative;
+        z-index: 20;
+    }
+    .kalamun-training-dashboard_progress-bar .dci-meter-value {
+        display: none;
+    }
+    
+    .kalamun-training-dashboard_course_progress {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1em;
+        margin: 1em 0;
+    }
+    .kalamun-training-dashboard_course_progress_line {
+        display: flex;
+        font-size: var(--font-size-small);
+        gap: 1em;
+        align-items: center;
+        width: 100%;
+    }
+    .kalamun-training-dashboard_course_progress_line h6 {
+        font-size: var(--font-size-small);
+        margin: 0 !important;
+        text-align: right;
+        flex-basis: 50%;
+        min-width: 45%;
+        max-width: 45%;
+    }
+    .kalamun-training-dashboard_course_progress_line span {
+        flex-basis: 1%;
+        text-align: center;
+        font-size: var(--font-size-large);
+    }
+    .kalamun-training-dashboard_course_progress_line div {
+        flex-basis: 50%;
+        min-width: 45%;
+        max-width: 45%;
+        text-align: left;
+    }
+    .kalamun-training-dashboard_course_progress .dci-meter {
+        font-size: 1.2em;
+        translate: 0.3em 0.2em;
+    }
+    .kalamun-training-dashboard_course_progress .dci-meter .percent {
+        display: none;
+    }
+    .kalamun-training-dashboard_course {
+        cursor: pointer;
+        position: relative;
+    }
+    .kalamun-training-dashboard_course_body {
+        position: relative;
+        color: var(--color-white);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+    }
+    
+    .kalamun-training-dashboard_heading {
+        width: 100%;
+        height: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: 65%;
+    }
+    .kalamun-training-dashboard_heading h3 {
+        font-size: var(--font-size-xlarge) !important;
+        text-transform: uppercase;
+        margin: 0;
+        text-align: center;
+        padding: 1rem;
+    }    
+    .kalamun-training-dashboard_heading h3::before {
+        content: '# ';
+        color: var(--color-red);
+    }
+    .kalamun-training-dashboard_more {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        white-space: nowrap;
+        text-transform: uppercase;
+    }
+    .kalamun-training-dashboard_more::before {
+        content: '';
+        border-bottom: 1px solid var(--color-white);
+        width: 100%;
+        display: block;
+        flex-grow: 2;
+    }
+    
+    .kalamun-training-dashboard_thumb {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: var(--color-blue);
+    }
+    .kalamun-training-dashboard_thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .kalamun-training-dashboard_thumb .empty-thumb {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background: var(--color-xxlight-grey);
+    }
+    
+    .kalamun-training-dashboard_course_meta {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        background: var(--color-white);
+        color: var(--color-blue);
+        transition: top .3s ease-in-out;
+    }
+    .kalamun-training-dashboard_course_meta .kalamun-training-dashboard_title:before {
+        content: '# ';
+        color: var(--color-red);
+    }
+    .kalamun-training-dashboard_course:hover .kalamun-training-dashboard_course_meta {
+        top: 0;
+    }
+    
+    
+    @container kalamun-training-dashboard (max-width: 500px) {
+        .kalamun-training-dashboard .kalamun-training-dashboard_body {
+            flex-direction: column;
+        }
+    }
+    
+    
+    .dashboard.splide .splide__slide {
+        padding: 1rem;
+        max-width: calc(33.3333%);
+    }
+    .dashboard.splide {
+        width: 100%;
+    }
+    .dashboard.splide:not( .is-overflow ) .splide__list {
+        justify-content: center;
+    }
+    .dashboard.splide .splide__pagination {
+        position: relative;
+        gap: 0.5rem;
+    }
+    .dashboard.splide .splide__pagination button {
+        width: 0.6rem;
+        height: 0.6rem;
+        background-color: var(--color-white);
+        padding: 0;
+    }
+    
+    .dashboard.splide .splide__arrows button {
+        background-color: var(--color-blue);
+        padding: 0;
+        font-size: 2em;
+        border-radius: 5rem;
+        width: 1.2em;
+        height: 1.2em;
+        outline: 0.2em solid var(--color-blue);
+        opacity: 1;
+    }
+    .dashboard.splide .splide__arrows button svg {
+        filter: invert();
+    }
+    .dashboard.splide .splide__arrows .splide__arrow--prev {
+        left: -1.5em;
+    }
+    .dashboard.splide .splide__arrows .splide__arrow--next {
+        right: -1.5em;
+    }
 }
 
-.dashboard.splide .splide__arrows button {
-    background-color: var(--color-blue);
-    padding: 0;
-    font-size: 2em;
-    border-radius: 5rem;
-    width: 1.2em;
-    height: 1.2em;
-    outline: 0.2em solid var(--color-blue);
-    opacity: 1;
-}
-.dashboard.splide .splide__arrows button svg {
-    filter: invert();
-}
-.dashboard.splide .splide__arrows .splide__arrow--prev {
-    left: -1.5em;
-}
-.dashboard.splide .splide__arrows .splide__arrow--next {
-    right: -1.5em;
-}
 
+.kalamun-training-dashboard[data-layout="banner"] {
+    
+    .kalamun-training-dashboard_courses {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 1300px;
+        margin: 0 auto;
+
+        .dashboard {
+            width: 100%;
+            max-width: 1300px;
+        }
+    
+        .dashboard__banners {
+            display: block;
+            width: 100%;
+        
+            .dashboard__banner {
+                width: 100%;
+                aspect-ratio: 16 / 5;
+                background: #fff;
+                display: block;
+                overflow: hidden;
+                position: relative;
+                font-size: var(--font-size-xlarge);
+
+                .kalamun-training-dashboard_course_meta {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 20rem;
+                    height: 100%;
+                    background: #0008;
+                    color: #fff;
+                    padding: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+
+                    button {
+                        background: var(--color-red);
+                        color: var(--color-white);
+                        width: 100%;
+                        border: 0;
+                        border-radius: 0;
+                        padding: 1em;
+
+                        &:hover {
+                            background: var(--color-light-red);
+                        }
+                    }
+                }
+
+                .kalamun-training-dashboard_thumb {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                }
+
+                .kalamun-training-dashboard_logo {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    z-index: 10;
+                    pointer-events: none;
+                    height: 100%;
+                    aspect-ratio: 1/1;
+
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: contain;
+                    }
+                }
+            }
+        }
+    }
+}
