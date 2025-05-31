@@ -376,6 +376,25 @@
                     }
                 }
 
+                .kalamun-training-dashboard_title {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    background: #fff;
+                    padding: 0.3em 0.6em;
+                    z-index: 30;
+                    pointer-events: none;
+                    color: #000;
+                    font-size: 1.2em;
+                    text-transform: uppercase;
+
+                    &::before {
+                        content: '# ';
+                        color: var(--color-red);
+                    }
+
+                }
+
                 .kalamun-training-dashboard_thumb {
                     position: relative;
                     width: 100%;

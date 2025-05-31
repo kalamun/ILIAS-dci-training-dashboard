@@ -555,6 +555,15 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         <li class="dashboard__banner">
                                             <div class="kalamun-training-dashboard_course" data-permalink="<?= $permalink; ?>">
                                                 <div class="kalamun-training-dashboard_course_body">
+                                                    <?php
+                                                    if (!empty($title)) {
+                                                        ?>
+                                                        <div class="kalamun-training-dashboard_title">
+                                                            <?= $title; ?>
+                                                        </div>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                     <div class="kalamun-training-dashboard_thumb">
                                                         <?= ($tile_image_exists ? '<a href="' . $permalink . '"><img src="' . $tile_image_path . '"></a>' : '<span class="empty-thumb"></span>'); ?>
                                                     </div>
