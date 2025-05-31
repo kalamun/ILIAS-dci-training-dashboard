@@ -16,6 +16,9 @@
 
     --box-shadow: 0 2px 10px 0 #0002;
 
+    --background-color: #003b5d;
+    --background-image: none;
+
     position: relative;
     padding: 1rem 0;
     height: 100%;
@@ -23,7 +26,7 @@
     display: flex;
     gap: 1.5em;
 
-    background: url('../assets/mytraining_bkg.png') center center no-repeat var(--background-color, var(--color-dark-blue));
+    background: var(--background-image) center center no-repeat var(--background-color, var(--color-dark-blue));
     background-size: 80%;
     background-position-y: 70%;
     color: var(--color-white);

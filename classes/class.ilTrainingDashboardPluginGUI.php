@@ -61,7 +61,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             default:
                 // perform valid commands
                 $cmd = $this->ctrl->getCmd();
-                if (in_array($cmd, array("create", "save", "edit", "update", "cancel"))) {
+                if (in_array($cmd, array("create", "save", "edit", "update", "cancel", "downloadFile"))) {
                     $this->$cmd();
                 }
                 break;
@@ -131,6 +131,19 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         return $root_course['ref_id'];
     }
 
+    private function getFileUrlById($image_id) {
+		$image_url = false;
+		if (empty($image_id)) return $image_url;
+
+		$fileObj = new ilObjFile($image_id, false);
+		if (!empty($fileObj)) {
+			$_SESSION[__CLASS__]['allowedFiles'][$fileObj->getId()] = true;
+			$this->ctrl->setParameter($this, 'id', $fileObj->getId());
+			$image_url = $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilTrainingDashboardPluginGUI'], 'downloadFile');
+		}
+		return $image_url;
+	}
+
     /**
      * Init editing form
      */
@@ -178,6 +191,12 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $input_bkg->setRequired(false);
         $form->addItem($input_bkg);
 
+        // backgroud image
+		$input_bkg_image = new ilImageFileInputGUI($this->lng->txt("background_image"), 'background_image_id');
+		$input_bkg_image->setAllowDeletion(true);
+		$input_bkg_image->setRequired(false);
+		$form->addItem($input_bkg_image);
+
         // save and cancel commands
         if ($a_create) {
             $input_limit->setValue(0);
@@ -192,6 +211,8 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $input_limit->setValue($prop['limit']);
             $input_layout->setValue($prop['layout']);
             $input_bkg->setValue($prop['background']);
+            $image_url = !empty($prop['background_image_id']) ? $this->getFileUrlById($prop['background_image_id']) : false;
+            if (!empty($image_url)) $input_bkg_image->setImage($image_url);
 
             $form->addCommandButton("update", $this->lng->txt("save"));
             $form->addCommandButton("cancel", $this->lng->txt("cancel"));
@@ -213,6 +234,38 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $properties['limit'] = $form->getInput('limit');
             $properties['layout'] = $form->getInput('layout');
             $properties['background'] = $form->getInput('background');
+
+            $fields = [
+                "background_image_id",
+            ];
+
+            foreach($fields as $key) {
+                if (!empty($_FILES[$key]["name"])) {
+                        $old_file_id = empty($properties[$key]) ? null : $properties[$key];
+                        
+                        $fileObj = new ilObjFile((int) $old_file_id, false);
+                        $fileObj->setType("file");
+                        $fileObj->setTitle($_FILES[$key]["name"]);
+                        $fileObj->setDescription("");
+                        $fileObj->setFileName($_FILES[$key]["name"]);
+                        $fileObj->setMode("filelist");
+                        if (empty($old_file_id)) {
+                                $fileObj->create();
+                        } else {
+                                $fileObj->update();
+                        }
+
+                        // upload file to filesystem
+                        if ($_FILES[$key]["tmp_name"] !== "") {
+                                $fileObj->getUploadFile(
+                                        $_FILES[$key]["tmp_name"],
+                                        $_FILES[$key]["name"]
+                                );
+                        }
+
+                        $properties[$key] = $fileObj->getId();
+                }
+            }
 
             if ($a_create) {
                 return $this->createElement($properties);
@@ -249,13 +302,15 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $limit = !empty($a_properties['limit']) ? $a_properties['limit'] : 0;
         $layout = !empty($a_properties['layout']) ? $a_properties['layout'] : "card";
         $background = !empty($a_properties['background']) ? $a_properties['background'] : "003b5d";
+        $background_image_id = !empty($a_properties['background_image_id']) ? $a_properties['background_image_id'] : false;
+        $background_image = $background_image_id ? '/' . $this->getFileUrlById($background_image_id) : false;
 
         /* courses */
         $courses = static::getCoursesOfUser($this->user->getId(), $limit);
 
         ob_start();
         ?>
-        <div class="kalamun-training-dashboard" data-layout="<?= $layout; ?>" <?= !empty($background) ? 'style="--background-color: #'. str_replace('"', '', $background) .'"' : '' ?>>
+        <div class="kalamun-training-dashboard" data-layout="<?= $layout; ?>" style="<?= !empty($background) ? '--background-color: #'. str_replace('"', '', $background) . ';': '' ?><?= !empty($background_image) ? '--background-image: url(\''. str_replace('"', '', $background_image) . '\')' : '' ?>">
             <div class="kalamun-training-dashboard-scrolldown"><span class="icon-down"></span></div>
             <div class="kalamun-training-dashboard_body">
                 <div class="kalamun-training-dashboard_title">
@@ -751,4 +806,18 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $array = preg_split('/(^.*\w+.*[\.\?!][\s])/m', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
         return trim($array[0] . $array[1]);
     }
+
+	/**
+	 * download file of file lists
+	 */
+	public function downloadFile() : void
+	{
+			$file_id = (int) $_GET['id'];
+			if ($_SESSION[__CLASS__]['allowedFiles'][$file_id]) {
+					$fileObj = new ilObjFile($file_id, false);
+					$fileObj->sendFile();
+			} else {
+					throw new ilException('not allowed');
+			}
+	}
 }
