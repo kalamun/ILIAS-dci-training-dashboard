@@ -10,6 +10,9 @@ minutes#:#minutes
 continue#:#En cours
 start#:#Démarrer
 not_started_yet#:#Non démarré
+show#:#Afficher
+user-courses#:#Les cours de l'utilisateur
+all-courses#:#Tous les cours
 sort#:#Trier les cours par
 alphabetical#:#Ordre alphabétique
 last_visited#:#Récemment visité
@@ -19,4 +22,4 @@ layout#:#Mise en page
 card#:#Card
 banner#:#Bannière
 background#:#Couleur d'arrière-plan
-background_image#:#Image d'arrière-plan
+background-image#:#Image d'arrière-plan

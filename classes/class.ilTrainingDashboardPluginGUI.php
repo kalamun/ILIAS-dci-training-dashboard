@@ -30,6 +30,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
     protected ilTree $tree;
     protected ilObjectService $object;
     protected ilObjUser $user;
+    protected $db;
     protected dciCourse $dciCourse;
 
     public function __construct()
@@ -44,10 +45,9 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $this->tree = $DIC->repositoryTree();
         $this->object = $DIC->object();
         $this->user = $DIC['ilUser'];
+        $this->db = $DIC->database();
 
         $this->dciCourse = new dciCourse();
-
-        //require_once('./Services/Calendar/classes/class.ilDateTime.php');
     }
 
     /**
@@ -165,6 +165,11 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $input_description->setRequired(false);
         $form->addItem($input_description);
 
+        // filter: user courses, all courses
+        $input_filter = new ilSelectInputGUI($this->plugin->txt("show"), "show");
+        $input_filter->setOptions(["user" => $this->plugin->txt("user-courses"), "all" => $this->plugin->txt("all-courses")]);
+        $form->addItem($input_filter);
+
         // sorting: alphabetical, last access
         $input_sort = new ilSelectInputGUI($this->plugin->txt("sort"), "sort");
         $input_sort->setOptions(["alphabetical" => $this->plugin->txt("alphabetical"), "last_visited" => $this->plugin->txt("last_visited")]);
@@ -192,7 +197,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $form->addItem($input_bkg);
 
         // backgroud image
-		$input_bkg_image = new ilImageFileInputGUI($this->lng->txt("background_image"), 'background_image_id');
+		$input_bkg_image = new ilImageFileInputGUI($this->plugin->txt("background-image"), 'background_image_id');
 		$input_bkg_image->setAllowDeletion(true);
 		$input_bkg_image->setRequired(false);
 		$form->addItem($input_bkg_image);
@@ -205,8 +210,16 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $form->setTitle($this->plugin->getPluginName());
         } else {
             $prop = $this->getProperties();
+            if (empty($prop['filter'])) $prop['filter'] = "";
+            if (empty($prop['sort'])) $prop['sort'] = "alphabetical";
+            if (empty($prop['limit'])) $prop['limit'] = 0;
+            if (empty($prop['layout'])) $prop['layout'] = "card";
+            if (empty($prop['background'])) $prop['background'] = "003b5d";
+            if (empty($prop['background_image_id'])) $prop['background_image_id'] = false;
+
             $input_title->setValue($prop['title']);
             $input_description->setValue($prop['description']);
+            $input_filter->setValue($prop['filter']);
             $input_sort->setValue($prop['sort']);
             $input_limit->setValue($prop['limit']);
             $input_layout->setValue($prop['layout']);
@@ -233,6 +246,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $properties['sort'] = $form->getInput('sort');
             $properties['limit'] = $form->getInput('limit');
             $properties['layout'] = $form->getInput('layout');
+            $properties['filter'] = $form->getInput('filter');
             $properties['background'] = $form->getInput('background');
 
             $fields = [
@@ -306,7 +320,13 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         $background_image = $background_image_id ? '/' . $this->getFileUrlById($background_image_id) : false;
 
         /* courses */
-        $courses = static::getCoursesOfUser($this->user->getId(), $limit);
+        if (empty($a_properties['filter']) || $a_properties['filter'] == "user") {
+            // user's courses
+            $courses = static::getCoursesOfUser($this->user->getId(), $limit);
+        } else {
+            // all courses
+            $courses = static::getAllCourses($limit);
+        }
 
         ob_start();
         ?>
@@ -390,7 +410,9 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
                                         $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
                                         $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
-                                        $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+                                        $lp_downloaded = !empty($lp['visits']) && $type == "file";
+                                        
+                                        if (empty($lp['spent_seconds'])) $lp['spent_seconds'] = 0;
 
                                         $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
 
@@ -547,7 +569,9 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
                                         $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
                                         $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
-                                        $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+                                        $lp_downloaded = !empty($lp['visits']) && $type == "file";
+
+                                        if (empty($lp['spent_seconds'])) $lp['spent_seconds'] = 0;
 
                                         $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
 
@@ -664,6 +688,28 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         return $html;
     }
 
+    public static function getAllCourses(int $limit = 0): array {
+        $query = "SELECT obj_id FROM object_data WHERE type='crs' AND offline = 0";
+        if ($limit > 0) $query .= " LIMIT " . intval($limit);
+
+        global $DIC;
+        $db = $DIC->database();
+        $db_query = $db->query($query);
+
+        $output = [];
+        while ($result = $db->fetchAssoc($db_query)) {
+            $ref_id = ilObject::_getAllReferences($result['obj_id']);
+            if (is_array($ref_id) && count($ref_id)) {
+                $ref_id = array_pop($ref_id);
+                $output[] = [
+                    'obj_id' => $result['obj_id'],
+                    'ref_id' => $ref_id,
+                ];
+            }
+        }
+
+        return $output;
+    }
 
     public static function getCoursesOfUser(
         int $a_user_id, int $limit = 0
@@ -675,14 +721,13 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         if ($limit == 0) $limit = 9999;
 
         // see ilPDSelectedItemsBlockGUI
-
         $items = ilParticipants::_getMembershipByType($a_user_id, ['crs']);
 
         $references = [];
         $lp_obj_refs = [];
         $count = 0;
         foreach ($items as $obj_id) {
-            if ($count > $limit) break;
+            if ($count >= $limit) break;
             $count++;
 
             $ref_id = ilObject::_getAllReferences($obj_id);
