@@ -328,6 +328,10 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $courses = static::getAllCourses($limit);
         }
 
+        if ($a_mode == "presentation" && count($courses) == 0) {
+            return "";
+        }
+
         ob_start();
         ?>
         <div class="kalamun-training-dashboard" data-layout="<?= $layout; ?>" style="<?= !empty($background) ? '--background-color: #'. str_replace('"', '', $background) . ';': '' ?><?= !empty($background_image) ? '--background-image: url(\''. str_replace('"', '', $background_image) . '\')' : '' ?>">
