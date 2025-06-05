@@ -329,7 +329,27 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
         }
 
         if ($a_mode == "presentation" && count($courses) == 0) {
-            return "";
+            return "<div></div>";
+        }
+
+        foreach ($courses as $i => $course) {
+            $ref_id = $course['ref_id'];
+            $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+
+            if (empty($obj) || $obj->getOfflineStatus()) {
+                continue;
+            }
+
+            $courses[$i]['obj_id'] = $obj->getId();
+            $courses[$i]['title'] = $obj->getTitle();
+            $courses[$i]['type'] = $obj->getType();
+            $courses[$i]['description'] = $obj->getDescription();
+        }
+
+        if ($order === "alphabetical") {
+            usort($courses, function($a, $b) {
+                return strcasecmp($a['title'], $b['title']);
+            });
         }
 
         ob_start();
@@ -355,19 +375,17 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                     <?php
                                     foreach ($courses as $course) {
                                         $ref_id = $course['ref_id'];
-
-                                        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
-                                        if (empty($obj) || $obj->getOfflineStatus()) {
+                                        $obj_id = $course['obj_id'];
+                                        if (empty($obj_id)) {
                                             continue;
                                         }
-                                        $obj_id = $obj->getId();
                                         
                                         $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
                                         $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
 
-                                        $type = $obj->getType();
-                                        $title = $obj->getTitle();
-                                        $description = $obj->getDescription();
+                                        $type = $course['type'];
+                                        $title = $course['title'];
+                                        $description = $course['description'];
 
                                         if (class_exists("ilCourseCoverGUI")) {
                                             // use square cover defined by the CourseCover plugin, if available
