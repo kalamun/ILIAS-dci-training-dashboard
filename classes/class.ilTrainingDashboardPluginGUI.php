@@ -328,10 +328,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $courses = static::getAllCourses($limit);
         }
 
-        if ($a_mode == "presentation" && count($courses) == 0) {
-            return "<div></div>";
-        }
-
         foreach ($courses as $i => $course) {
             $ref_id = $course['ref_id'];
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
@@ -344,11 +340,24 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $courses[$i]['title'] = $obj->getTitle();
             $courses[$i]['type'] = $obj->getType();
             $courses[$i]['description'] = $obj->getDescription();
+            $courses[$i]['lp'] = ilLearningProgress::_getProgress($this->user->getId(), $courses[$i]['obj_id']);
+
+            
+            if ($order === "last_visited" && empty($courses[$i]['lp']['access_time'])) unset($courses[$i]);
         }
 
-        if ($order === "alphabetical") {
+        if ($a_mode == "presentation" && count($courses) == 0) {
+            return "<div></div>";
+        }
+
+        if (empty($order) || $order === "alphabetical") {
             usort($courses, function($a, $b) {
                 return strcasecmp($a['title'], $b['title']);
+            });
+
+        } elseif ($order === "last_visited") {
+            usort($courses, function($a, $b) {
+                return $b['lp']['access_time'] - $a['lp']['access_time'];
             });
         }
 
@@ -426,7 +435,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         2 = completed;
                                         3 = failed;
                                         */
-                                        $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
+                                        $lp = $course['lp'];
                                         $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
                                         $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
                                         $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
