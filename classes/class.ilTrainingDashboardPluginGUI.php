@@ -720,7 +720,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
     }
 
     public static function getAllCourses(int $limit = 0): array {
-        $query = "SELECT obj_id FROM object_data WHERE type='crs' AND offline = 0";
+        $query = "SELECT a.obj_id, b.deleted FROM object_data AS a RIGHT JOIN object_reference AS b ON a.obj_id = b.obj_id WHERE a.type='crs' AND a.offline = 0  AND b.deleted IS NULL";
         if ($limit > 0) $query .= " LIMIT " . intval($limit);
 
         global $DIC;

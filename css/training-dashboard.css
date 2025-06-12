@@ -328,19 +328,18 @@
         flex-direction: column;
         align-items: center;
         width: 100%;
-        max-width: 1300px;
         margin: 0 auto;
 
         .dashboard {
             width: 100%;
-            max-width: 1300px;
         }
     
         .dashboard__banners {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 2px;
             width: 100%;
+            padding: 0;
         
             .dashboard__banner {
                 width: 100%;
