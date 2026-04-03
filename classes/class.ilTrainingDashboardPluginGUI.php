@@ -261,7 +261,7 @@
                                                 }
                                                 $obj_id = $obj->getId();
 
-                                                $from_cache = dciSkin_cache::get('ilTrainingDashboardPluginGUI::getCourseCard');
+                                                $from_cache = dciSkin_cache::get('ilTrainingDashboardPluginGUI::getCourseCard', $obj_id);
                                                 if (dciSkin_cache::is_valid($from_cache)) {
                                                     $card = $from_cache;
                                                 } else {
@@ -309,6 +309,8 @@
                                                     $card['lp_downloaded']  = $lp['visits'] > 0 && $type == "file";
 
                                                     $card['typical_learning_time'] = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+
+                                                    dciSkin_cache::add('ilTrainingDashboardPluginGUI::getCourseCard', $card, $obj_id);
                                                 }
 
                                             ?>
