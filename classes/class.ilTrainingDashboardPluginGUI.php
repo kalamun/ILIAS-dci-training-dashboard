@@ -321,9 +321,9 @@
                                                 if ($card['mandatory_cards_count'] > 0) {
                                                             ?>
                                                 <div class="kalamun-training-dashboard_progress-bar">
-                                                    <meter min="0" max="0" value="<?php echo round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                                    <meter min="0" max="0" value="<?php echo round(100 / $card['mandatory_cards_count'] * $card['completed_cards_count']); ?>"></meter>
                                                     <span class="progress">
-                                                        <?php echo round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
+                                                        <?php echo round(100 / $card['mandatory_cards_count'] * $card['completed_cards_count']); ?>%
                                                     </span>
                                                 </div>
                                                 <?php
