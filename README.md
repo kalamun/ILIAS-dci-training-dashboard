@@ -12,8 +12,8 @@ This is an example plugin with minimal features for the ILIAS PageComponent Plug
 ```
 mkdir -p Customizing/global/plugins/Services/COPage/PageComponent
 cd Customizing/global/plugins/Services/COPage/PageComponent
-git clone https://github.com/kalamun/ILIAS-Card-Plugin.git Card
+git clone https://github.com/kalamun/ILIAS-Card-Plugin.git TrainingDashboard
 ```
 
 ## Requirements
-This plugin can be run on ILIAS v7.x
+This plugin can be run on ILIAS v10.x
