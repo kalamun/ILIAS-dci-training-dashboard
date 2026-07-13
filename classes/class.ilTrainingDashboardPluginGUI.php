@@ -61,7 +61,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             default:
                 // perform valid commands
                 $cmd = $this->ctrl->getCmd();
-                if (in_array($cmd, array("create", "save", "edit", "update", "cancel", "downloadFile"))) {
+                if (in_array($cmd, array("create", "create_plug", "save", "edit", "update", "cancel", "downloadFile"))) {
                     $this->$cmd();
                 }
                 break;
@@ -395,6 +395,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         $type = $course['type'];
                                         $title = $course['title'];
                                         $description = $course['description'];
+                                        $tile_image_exists = false;
 
                                         if (class_exists("ilCourseCoverGUI")) {
                                             // use square cover defined by the CourseCover plugin, if available
@@ -405,9 +406,9 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         
                                         if (empty($tile_image_exists)) {
                                             // use tile image as cover
-                                            $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
-                                            $tile_image_path = $tile_image->getFullPath();
-                                            $tile_image_exists = $tile_image->exists();
+                                            //$tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
+                                            //$tile_image_path = $tile_image->getFullPath();
+                                            //$tile_image_exists = $tile_image->exists();
                                         }
 
                                         $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);

@@ -280,10 +280,17 @@
     
     .dashboard.splide .splide__slide {
         padding: 1rem;
+        min-width: calc(33.3333%);
         max-width: calc(33.3333%);
     }
     .dashboard.splide {
         width: 100%;
+    }
+    .dashboard.splide .splide__list {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
     }
     .dashboard.splide:not( .is-overflow ) .splide__list {
         justify-content: center;
