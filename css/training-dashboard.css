@@ -443,3 +443,13 @@
         }
     }
 }
+
+
+/* repository root page - avoid breaking height */
+#ilContentContainer {
+    & > div.row {
+        #il_center_col {
+            height: 100%;
+        }
+    }
+}

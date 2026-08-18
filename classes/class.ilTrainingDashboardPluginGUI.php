@@ -687,9 +687,9 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                     <?php
                                     }
                                 ?>
-                            </ul>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
                     <?php } ?>
                 </div>
             </div>
