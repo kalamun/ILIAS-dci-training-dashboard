@@ -300,6 +300,37 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
     }
 
     /**
+     * getSrcUrlForLegacyForm() always returns the smallest generated flavour
+     * (xs, 120px), so fetch the flavour URLs directly and take the largest
+     * one (xl, 1920px) instead.
+     */
+    private function getHighResTileImageUrl(
+        ?\ILIAS\Object\Properties\CoreProperties\TileImage\ilObjectTileImage $tile_image
+    ): string {
+        if ($tile_image === null) {
+            return '';
+        }
+
+        $rid = $tile_image->getRid();
+        if (!empty($rid)) {
+            global $DIC;
+            $resource_storage = $DIC->resourceStorage();
+            $resource = $resource_storage->manage()->find($rid);
+            if ($resource !== null) {
+                $flavour_definition = new \ILIAS\Object\Properties\CoreProperties\TileImage\ilObjectTileImageFlavourDefinition();
+                $flavour = $resource_storage->flavours()->get($resource, $flavour_definition);
+                $urls = $resource_storage->consume()->flavourUrls($flavour)->getURLsAsArray(false);
+                // 0 = 1920px, 1 = 960px, 2 = 480px ...
+                if (!empty($urls[1])) {
+                    return $urls[1];
+                }
+            }
+        }
+
+        return $tile_image->getSrcUrlForLegacyForm();
+    }
+
+    /**
      * Get HTML for element
      * @param string    page mode (edit, presentation, print, preview, offline)
      * @return string   html code
@@ -342,7 +373,6 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
             $courses[$i]['description'] = $obj->getDescription();
             $courses[$i]['lp'] = ilLearningProgress::_getProgress($this->user->getId(), $courses[$i]['obj_id']);
 
-            
             if ($order === "last_visited" && empty($courses[$i]['lp']['access_time'])) unset($courses[$i]);
         }
 
@@ -407,7 +437,7 @@ class ilTrainingDashboardPluginGUI extends ilPageComponentPluginGUI
                                         if (empty($tile_image_exists)) {
                                             // use tile image as cover
                                             $obj_properties = \ILIAS\Object\ilObjectDIC::dic()['object_properties_agregator']->getFor($obj_id, $type);
-                                            $tile_image_path = $obj_properties->getPropertyTileImage()->getTileImage()->getSrcUrlForLegacyForm();
+                                            $tile_image_path = $this->getHighResTileImageUrl($obj_properties->getPropertyTileImage()->getTileImage());
                                             $tile_image_exists = !empty($tile_image_path);
                                         }
 
